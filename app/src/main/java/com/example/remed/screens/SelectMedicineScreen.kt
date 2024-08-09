@@ -73,9 +73,7 @@ fun SelectMedicinesScreen(navController: NavController) {
 
         Button(onClick = {
             // Navigate back to HomeScreen or perform an action with the selected medicines
-            navController.navigate(Screens.ScreenHomeRoute.route) {
-                popUpTo(Screens.ScreenHomeRoute.route) { inclusive = true }
-            }
+            navController.navigateUp()
         }) {
             Text("Confirm Selection")
         }

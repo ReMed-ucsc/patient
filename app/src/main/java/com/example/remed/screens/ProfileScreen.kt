@@ -12,10 +12,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.remed.R
+import com.example.remed.navigation.AuthRouteScreen
+import com.example.remed.navigation.Graph
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(navController: NavController) {
     var name by remember { mutableStateOf("Hansaja Kithmal") }
     var email by remember { mutableStateOf("hkd@gmail.com") }
     var isEditing by remember { mutableStateOf(false) }
@@ -78,6 +81,17 @@ fun ProfileScreen() {
             ) {
                 Text(text = "Edit Details")
             }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        androidx.compose.material.Button(onClick = {
+            navController.navigate(AuthRouteScreen.Login.route) {
+                popUpTo(Graph.MAIN) {
+                    inclusive = true
+                }
+            }
+        }) {
+            Text("Logout")
         }
     }
 }

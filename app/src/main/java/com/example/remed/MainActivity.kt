@@ -11,6 +11,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import com.example.remed.models.LoginViewModel
 import com.example.remed.navigation.Nav
+import com.example.remed.navigation.graph.RootNavGraph
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,7 +25,7 @@ class MainActivity : ComponentActivity() {
             Surface(
                 modifier = Modifier.fillMaxSize(),
             ) {
-                Nav(loginViewModel)
+                RootNavGraph(loginViewModel)
             }
         }
     }

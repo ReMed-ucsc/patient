@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.remed.navigation.HomeRouteScreens
 import com.example.remed.navigation.Screens
 
 
@@ -32,7 +33,7 @@ fun  HomeScreen(modifier: Modifier = Modifier, navController: NavController){
         }
 //        Get input of medication list from user
         Button(onClick = {
-            navController.navigate(Screens.ScreenSelectMedicineRoute.route)
+            navController.navigate(HomeRouteScreens.SelectMedicine.route)
         }) {
             Text(text = "Add Medication")
         }

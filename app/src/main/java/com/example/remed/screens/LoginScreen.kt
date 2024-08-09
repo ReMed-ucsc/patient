@@ -33,6 +33,8 @@ import androidx.navigation.NavController
 import com.example.remed.R
 import com.example.remed.api.NetworkResponse
 import com.example.remed.models.LoginViewModel
+import com.example.remed.navigation.AuthRouteScreen
+import com.example.remed.navigation.Graph
 import com.example.remed.navigation.Screens
 import java.util.regex.Pattern
 
@@ -159,7 +161,11 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel, navCon
 
         when (val result = loginResponse.value) {
             is NetworkResponse.Success -> {
-                navController.navigate(Screens.ScreenMainRoute.route)
+                navController.navigate(Graph.MAIN){
+                    popUpTo(AuthRouteScreen.Login.route){
+                        inclusive = true
+                    }
+                }
             }
             is NetworkResponse.Error -> {
                 Text(text = result.message)
