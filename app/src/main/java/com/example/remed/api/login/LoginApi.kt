@@ -9,4 +9,5 @@ interface LoginApi {
     suspend fun login(
         @Body loginRequest: Request
     ) : Response<LoginModel>
+
 }

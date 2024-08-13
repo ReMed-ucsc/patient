@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.remed.navigation.Screens
+import com.example.remed.navigation.AuthRouteScreen
 
 
 @Composable
@@ -26,7 +26,7 @@ fun  ForgetPassScreen(navController: NavController, modifier: Modifier = Modifie
         Spacer(modifier.height(40.dp))
         Button(onClick = {
 
-            navController.navigate(Screens.ScreenLoginRoute.route)
+            navController.navigate(AuthRouteScreen.ForgetPassword.route)
         }) {
             Text(text = "set pass (go login)", fontSize = 25.sp)
         }

@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import com.example.remed.models.LoginViewModel
-import com.example.remed.navigation.Nav
 import com.example.remed.navigation.graph.RootNavGraph
 
 class MainActivity : ComponentActivity() {
@@ -19,13 +18,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         installSplashScreen()
 
-        val loginViewModel = ViewModelProvider(this)[LoginViewModel::class.java]
+//        val loginViewModel = ViewModelProvider(this)[LoginViewModel::class.java]
 
         setContent {
             Surface(
                 modifier = Modifier.fillMaxSize(),
             ) {
-                RootNavGraph(loginViewModel)
+//                RootNavGraph(loginViewModel)
+                RootNavGraph()
             }
         }
     }

@@ -35,53 +35,17 @@ import com.example.remed.api.NetworkResponse
 import com.example.remed.models.LoginViewModel
 import com.example.remed.navigation.AuthRouteScreen
 import com.example.remed.navigation.Graph
-import com.example.remed.navigation.Screens
 import java.util.regex.Pattern
 
 @Composable
 fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel, navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf<String?>(null) }
-    var passwordError by remember { mutableStateOf<String?>(null) }
+
     var passwordVisible by remember { mutableStateOf(false) }
 
     val loginResponse = viewModel.loginResponse.observeAsState()
 
-    fun validateEmail(): Boolean {
-        return if (email.isEmpty()) {
-            emailError = "Email cannot be empty"
-            false
-        } else if (!Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$").matcher(email).matches()) {
-            emailError = "Invalid email address"
-            false
-        } else {
-            emailError = null
-            true
-        }
-    }
-
-    fun validatePassword(): Boolean {
-        return if (password.isEmpty()) {
-            passwordError = "Password cannot be empty"
-            false
-        } else if (password.length < 8) {
-            passwordError = "Password must be at least 8 characters long"
-            false
-        } else if (!Pattern.compile(".*[A-Z].*").matcher(password).matches()) {
-            passwordError = "Password must contain at least one uppercase letter"
-            false
-        } else if (!Pattern.compile(".*[a-z].*").matcher(password).matches()) {
-            passwordError = "Password must contain at least one lowercase letter"
-            false
-        } else if (!Pattern.compile(".*[0-9].*").matcher(password).matches()) {
-            passwordError = "Password must contain at least one number"
-            false
-        } else {
-            passwordError = null
-            true
-        }
-    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -105,14 +69,9 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel, navCon
             value = email,
             onValueChange = {
                 email = it
-                validateEmail()
             },
             label = { Text(text = "Email address") },
-            isError = emailError != null
         )
-        if (emailError != null) {
-            Text(text = emailError!!, color = MaterialTheme.colorScheme.error)
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -120,10 +79,8 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel, navCon
             value = password,
             onValueChange = {
                 password = it
-                validatePassword()
             },
             label = { Text(text = "Password") },
-            isError = passwordError != null,
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val image = if (passwordVisible)
@@ -137,19 +94,12 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel, navCon
                 }
             }
         )
-        if (passwordError != null) {
-            Text(text = passwordError!!, color = MaterialTheme.colorScheme.error)
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
-                val isEmailValid = validateEmail()
-                val isPasswordValid = validatePassword()
-                if (isEmailValid && isPasswordValid) {
                     viewModel.login(email, password)
-                }
             }
         ) {
             Text(text = "Login")
@@ -158,6 +108,13 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel, navCon
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(text = "Forgot Password", modifier = Modifier.clickable { })
+        
+//        register
+        Button(onClick = {
+            navController.navigate(AuthRouteScreen.Register.route)
+        }) {
+            Text(text = "New to here? Register with us.")
+        }
 
         when (val result = loginResponse.value) {
             is NetworkResponse.Success -> {

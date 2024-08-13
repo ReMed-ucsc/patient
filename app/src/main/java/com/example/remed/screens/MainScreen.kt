@@ -26,8 +26,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.remed.navigation.MainRouteScreens
 import com.example.remed.navigation.NavItem
-import com.example.remed.navigation.Screens
 import com.example.remed.navigation.graph.MainNavGraph
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -47,22 +47,22 @@ fun MainScreen(
         NavItem(
             label = "Home",
             icon = Icons.Default.Home,
-            route = Screens.ScreenHomeRoute.route
+            route = MainRouteScreens.Home.route
         ),
         NavItem(
             label = "Reminder",
             icon = Icons.Default.Timelapse,
-            route = Screens.ScreenReminderRoute.route // Update to the correct route
+            route = MainRouteScreens.Reminder.route
         ),
         NavItem(
             label = "History",
             icon = Icons.Default.History,
-            route = Screens.ScreenHistoryRoute.route // Update to the correct route
+            route = MainRouteScreens.History.route
         ),
         NavItem(
             label = "Profile",
             icon = Icons.Default.Person,
-            route = Screens.ScreenProfileRoute.route
+            route = MainRouteScreens.Profile.route
         )
     )
 

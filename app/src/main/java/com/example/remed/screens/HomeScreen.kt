@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.remed.navigation.HomeRouteScreens
-import com.example.remed.navigation.Screens
 
 
 @Composable
