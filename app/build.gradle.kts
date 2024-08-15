@@ -81,6 +81,8 @@ dependencies {
 
     implementation(libs.androidx.core.splashscreen)
 
+//    photo picker
+    implementation(libs.coil.kt.coil.compose)
 
 
 }

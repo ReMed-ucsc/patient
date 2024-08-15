@@ -7,10 +7,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.remed.navigation.Graph
 import com.example.remed.navigation.MainRouteScreens
+import com.example.remed.screens.DashboardScreen
 import com.example.remed.screens.History
 import com.example.remed.screens.HomeScreen
 import com.example.remed.screens.MainScreen
 import com.example.remed.screens.ProfileScreen
+import com.example.remed.screens.ReminderScreen
 
 @Composable
 fun MainNavGraph(
@@ -24,10 +26,10 @@ fun MainNavGraph(
         startDestination = MainRouteScreens.Home.route
     ){
         composable(route = MainRouteScreens.Home.route) {
-            HomeScreen(navController = rootNavController)
+            DashboardScreen(navController = rootNavController)
         }
         composable(route = MainRouteScreens.Reminder.route) {
-            HomeScreen(navController = rootNavController)
+            ReminderScreen(navController = rootNavController)
         }
         composable(route = MainRouteScreens.History.route) {
             History(navController = rootNavController)

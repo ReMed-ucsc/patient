@@ -26,4 +26,9 @@ sealed class MainRouteScreens(val route : String){
 
 sealed class HomeRouteScreens(val route : String){
     object SelectMedicine : HomeRouteScreens(route = "SelectMedicine")
+    object SearchMedicine : HomeRouteScreens(route = "SearchMedicine")
+    object SearchPharmacy : HomeRouteScreens(route = "SearchPharmacy")
+    object PlaceOrder : HomeRouteScreens(route = "PlaceOrder")
+
+
 }
