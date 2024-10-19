@@ -15,16 +15,36 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.MaterialTheme
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
+import com.example.remed.api.NetworkResponse
+import com.example.remed.api.order.OrderData
+import com.example.remed.api.order.PharmacyData
+import com.example.remed.api.order.PharmacyList
+import com.example.remed.datastore.StoreAccessToken
+import com.example.remed.models.OrderViewModel
 import com.example.remed.navigation.HomeRouteScreens
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.runBlocking
 
 @Composable
-fun SearchPharmacyScreen(navController: NavController) {
+fun SearchPharmacyScreen(navController: NavController, viewModel: OrderViewModel) {
     var location by remember { mutableStateOf(TextFieldValue("")) }
-    var pharmacies by remember { mutableStateOf(listOf<Pharmacy>()) }
-    var showPharmacyList by remember { mutableStateOf(false) }
+
+    val pharmacyListResponse = viewModel.pharmacyListResponse.observeAsState()
+
+    val context = LocalContext.current
+    val dataStore = StoreAccessToken(context)
+    var accessToken by remember { mutableStateOf<String?>(null) }
+
+    // Fetch the access token and call API only once
+    LaunchedEffect(key1 = Unit) { // Use a key to prevent recomposition triggers
+        accessToken = runBlocking { dataStore.getAccessToken.firstOrNull() }
+    }
 
     Column(
         modifier = Modifier
@@ -63,13 +83,7 @@ fun SearchPharmacyScreen(navController: NavController) {
         // Set Location Button
         Button(
             onClick = {
-                // Simulate fetching nearby pharmacies
-                pharmacies = listOf(
-                    Pharmacy("Pharmacy A", "123 Main St, City", "123-456-7890"),
-                    Pharmacy("Pharmacy B", "456 Elm St, City", "987-654-3210"),
-                    Pharmacy("Pharmacy C", "789 Oak St, City", "555-555-5555"),
-                )
-                showPharmacyList = true
+                viewModel.searchNearbyPharmacies(lat = 6.84862699, long = 79.924950)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -81,27 +95,36 @@ fun SearchPharmacyScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Nearby Pharmacies List using LazyColumn
-        if (showPharmacyList) {
-            Text(
-                text = "Nearby Pharmacies",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+        when (val result = pharmacyListResponse.value) {
+            is NetworkResponse.Success -> {
+                val pharmacies : List<PharmacyData> = result.data.data
+                Text(
+                    text = "Nearby Pharmacies",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(8.dp))
 
-            LazyColumn {
-                items(pharmacies) { pharmacy ->
-                    PharmacyCard(pharmacy, navController)
+                LazyColumn {
+                    items(pharmacies) { pharmacy ->
+                        PharmacyCard(pharmacy, navController)
+                    }
                 }
             }
+            is NetworkResponse.Error -> {
+                Text(text = result.message)
+            }
+            is NetworkResponse.Loading -> {
+                CircularProgressIndicator()
+            }
+            null -> {}
         }
     }
 }
 
 @Composable
-fun PharmacyCard(pharmacy: Pharmacy, navController: NavController) {
+fun PharmacyCard(pharmacy: PharmacyData, navController: NavController) {
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(8.dp),
@@ -128,7 +151,13 @@ fun PharmacyCard(pharmacy: Pharmacy, navController: NavController) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Contact: ${pharmacy.contact}",
+                text = "Contact: ${pharmacy.contactNo}",
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Distance: ${pharmacy.distance}",
                 fontSize = 16.sp,
                 color = Color.Gray
             )

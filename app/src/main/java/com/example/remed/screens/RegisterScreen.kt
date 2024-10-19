@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.remed.R
 import com.example.remed.api.NetworkResponse
-import com.example.remed.models.RegisterViewModel
+import com.example.remed.models.AuthViewModel
 import com.example.remed.navigation.AuthRouteScreen
 import com.example.remed.navigation.Graph
 import kotlinx.coroutines.delay
@@ -44,7 +44,7 @@ import java.util.regex.Pattern
 
 
 @Composable
-fun  RegisterScreen(navController: NavController, viewModel: RegisterViewModel, modifier: Modifier = Modifier){
+fun  RegisterScreen(navController: NavController, viewModel: AuthViewModel, modifier: Modifier = Modifier){
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }

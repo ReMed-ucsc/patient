@@ -2,9 +2,12 @@ package com.example.remed.navigation.graph
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.remed.models.AuthViewModel
+import com.example.remed.models.OrderViewModel
 import com.example.remed.navigation.Graph
 import com.example.remed.navigation.MainRouteScreens
 import com.example.remed.screens.DashboardScreen
@@ -25,6 +28,7 @@ fun MainNavGraph(
         route = Graph.MAIN,
         startDestination = MainRouteScreens.Home.route
     ){
+
         composable(route = MainRouteScreens.Home.route) {
             DashboardScreen(navController = rootNavController)
         }
@@ -32,7 +36,8 @@ fun MainNavGraph(
             ReminderScreen(navController = rootNavController)
         }
         composable(route = MainRouteScreens.History.route) {
-            History(navController = rootNavController)
+            val orderViewModel: OrderViewModel = viewModel()
+            History(navController = rootNavController, viewModel = orderViewModel)
         }
         composable(route = MainRouteScreens.Profile.route) {
             ProfileScreen(navController = rootNavController)

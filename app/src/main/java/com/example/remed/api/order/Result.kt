@@ -1,4 +1,4 @@
-package com.example.remed.api.register
+package com.example.remed.api.order
 
 data class Result(
     val error: Boolean,

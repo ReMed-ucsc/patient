@@ -1,6 +1,6 @@
-package com.example.remed.api.register
+package com.example.remed.api.auth
 
-data class Request (
+data class RegisterRequest (
     val name: String,
     val email: String,
     val password: String

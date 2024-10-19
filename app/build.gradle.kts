@@ -84,5 +84,9 @@ dependencies {
 //    photo picker
     implementation(libs.coil.kt.coil.compose)
 
+//    datastore
+    implementation(libs.androidx.datastore.preferences)
+
+
 
 }

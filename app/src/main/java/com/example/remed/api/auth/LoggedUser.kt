@@ -1,6 +1,6 @@
-package com.example.remed.api.login
+package com.example.remed.api.auth
 
-data class User(
+data class LoggedUser(
     val auth_token: String,
     val email: String,
     val name: String

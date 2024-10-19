@@ -37,7 +37,7 @@ fun DashboardScreen(navController: NavController) {
     ) {
         // Greeting message with avatar
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -73,35 +73,35 @@ fun DashboardScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Search bar
-        BasicTextField(
-            value = TextFieldValue(""),
-            onValueChange = {},
-            decorationBox = { innerTextField ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color.LightGray)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search Icon",
-                        tint = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    innerTextField()
-                }
-            }
-        )
+//        BasicTextField(
+//            value = TextFieldValue(""),
+//            onValueChange = {},
+//            decorationBox = { innerTextField ->
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(50.dp)
+//                        .clip(RoundedCornerShape(12.dp))
+//                        .background(Color.LightGray)
+//                        .padding(horizontal = 16.dp, vertical = 12.dp),
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Filled.Search,
+//                        contentDescription = "Search Icon",
+//                        tint = Color.Gray
+//                    )
+//                    Spacer(modifier = Modifier.width(8.dp))
+//                    innerTextField()
+//                }
+//            }
+//        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Category selection boxes
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             CategoryBox(title = "Search using medicines") {

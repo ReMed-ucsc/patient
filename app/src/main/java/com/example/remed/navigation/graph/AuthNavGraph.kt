@@ -7,8 +7,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.example.remed.MainActivity
-import com.example.remed.models.LoginViewModel
-import com.example.remed.models.RegisterViewModel
+import com.example.remed.models.AuthViewModel
 import com.example.remed.navigation.AuthRouteScreen
 import com.example.remed.navigation.Graph
 import com.example.remed.screens.ForgetPassScreen
@@ -26,11 +25,11 @@ fun NavGraphBuilder.authNavGraph(rootNavController: NavController){
         startDestination = AuthRouteScreen.Login.route
     ){
         composable(route = AuthRouteScreen.Login.route) {
-            val loginViewModel: LoginViewModel = viewModel() // Use viewModel() here
+            val loginViewModel: AuthViewModel = viewModel() // Use viewModel() here
             LoginScreen(viewModel = loginViewModel, navController = rootNavController)
         }
         composable(route = AuthRouteScreen.Register.route) {
-            val registerViewModel: RegisterViewModel = viewModel() // Use viewModel() here
+            val registerViewModel: AuthViewModel = viewModel() // Use viewModel() here
             RegisterScreen(viewModel = registerViewModel, navController = rootNavController)
         }
         composable(route = AuthRouteScreen.ForgetPassword.route) {

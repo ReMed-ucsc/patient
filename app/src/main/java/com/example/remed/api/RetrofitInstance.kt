@@ -1,7 +1,7 @@
 package com.example.remed.api
 
-import com.example.remed.api.login.LoginApi
-import com.example.remed.api.register.RegisterApi
+import com.example.remed.api.order.OrderAPI
+import com.example.trainlog.api.auth.AuthAPI
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -15,7 +15,9 @@ object RetrofitInstance {
             .build()
     }
 
-    val loginApi : LoginApi = getInstance().create(LoginApi::class.java)
-    val registerApi : RegisterApi = getInstance().create(RegisterApi::class.java)
+//     create api instances to call the methods inside of them
+    val authAPI : AuthAPI = getInstance().create(AuthAPI::class.java)
+    val orderAPI : OrderAPI = getInstance().create(OrderAPI::class.java)
+
 
 }
