@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import com.example.remed.navigation.graph.RootNavGraph
+import com.example.remed.ui.theme.ReMedTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,11 +21,13 @@ class MainActivity : ComponentActivity() {
 //        val loginViewModel = ViewModelProvider(this)[LoginViewModel::class.java]
 
         setContent {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-            ) {
+            ReMedTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
 //                RootNavGraph(loginViewModel)
-                RootNavGraph()
+                    RootNavGraph()
+                }
             }
         }
     }
