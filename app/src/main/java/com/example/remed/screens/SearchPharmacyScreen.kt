@@ -25,6 +25,7 @@ import com.example.remed.api.NetworkResponse
 import com.example.remed.api.order.OrderData
 import com.example.remed.api.order.PharmacyData
 import com.example.remed.api.order.PharmacyList
+import com.example.remed.components.PharmacyCard
 import com.example.remed.datastore.StoreAccessToken
 import com.example.remed.models.OrderViewModel
 import com.example.remed.navigation.HomeRouteScreens
@@ -123,57 +124,6 @@ fun SearchPharmacyScreen(navController: NavController, viewModel: OrderViewModel
     }
 }
 
-@Composable
-fun PharmacyCard(pharmacy: PharmacyData, navController: NavController) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = pharmacy.name,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Address: ${pharmacy.address}",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Contact: ${pharmacy.contactNo}",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Distance: ${pharmacy.distance}",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    navController.navigate(HomeRouteScreens.PlaceOrder.route)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(text = "Place Order")
-            }
-        }
-    }
-}
 
 data class Pharmacy(val name: String, val address: String, val contact: String)
 

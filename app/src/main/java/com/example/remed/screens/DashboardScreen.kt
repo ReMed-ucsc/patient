@@ -63,10 +63,11 @@ fun DashboardScreen(navController: NavController) {
         Image(
             painter = painterResource(id = R.drawable.login),
             contentDescription = "Banner Image",
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.Fit,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp)
+                .fillMaxHeight(0.5f)
+                .aspectRatio(9f / 16f) // Maintain aspect ratio
                 .clip(RoundedCornerShape(16.dp))
         )
 

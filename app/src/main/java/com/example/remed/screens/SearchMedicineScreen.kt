@@ -13,16 +13,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import com.example.remed.navigation.HomeRouteScreens
+import com.example.remed.components.MedicineSelectionDialog
+import com.example.remed.components.PharmacyWithMedicineCard
 
 @Composable
 fun SearchMedicineScreen(navController: NavController) {
-    var selectedMedicine by remember { mutableStateOf(TextFieldValue("")) }
+    var selectedMedicines by remember { mutableStateOf(listOf<String>()) }
     var pharmacies by remember { mutableStateOf(listOf<PharmacyWithMedicine>()) }
     var showPharmacyList by remember { mutableStateOf(false) }
+    var showMedicineDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -40,22 +45,43 @@ fun SearchMedicineScreen(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        BasicTextField(
-            value = selectedMedicine,
-            onValueChange = { selectedMedicine = it },
-            decorationBox = { innerTextField ->
+        LazyColumn {
+            items(selectedMedicines) { medicine ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp)
-                        .background(Color.LightGray)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    innerTextField()
+                    Text(
+                        text = medicine,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Color.Black,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = { selectedMedicines = selectedMedicines - medicine }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Remove Medicine",
+                            tint = Color.Red
+                        )
+                    }
                 }
             }
-        )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = { showMedicineDialog = true },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(text = "Select Medicine")
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -97,57 +123,16 @@ fun SearchMedicineScreen(navController: NavController) {
             }
         }
     }
-}
 
-@Composable
-fun PharmacyWithMedicineCard(pharmacy: PharmacyWithMedicine, navController: NavController) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = pharmacy.name,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Address: ${pharmacy.address}",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Contact: ${pharmacy.contact}",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Available: ${pharmacy.availableMedicines} units",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    navController.navigate(HomeRouteScreens.PlaceOrder.route)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(text = "Place Order")
-            }
-        }
+    if (showMedicineDialog) {
+        MedicineSelectionDialog(
+            onDismiss = { showMedicineDialog = false },
+            onMedicineSelected = { medicine ->
+                selectedMedicines = selectedMedicines + medicine
+                showMedicineDialog = false
+            },
+            selectedMedicines = selectedMedicines
+        )
     }
 }
 
