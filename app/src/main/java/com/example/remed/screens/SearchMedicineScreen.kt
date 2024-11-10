@@ -26,6 +26,7 @@ import com.example.remed.components.PharmacyWithMedicineCard
 fun SearchMedicineScreen(navController: NavController) {
     var selectedMedicines by remember { mutableStateOf(listOf<String>()) }
     var pharmacies by remember { mutableStateOf(listOf<PharmacyWithMedicine>()) }
+    var showSelectedMedicineList by remember { mutableStateOf(true) }
     var showPharmacyList by remember { mutableStateOf(false) }
     var showMedicineDialog by remember { mutableStateOf(false) }
 
@@ -45,27 +46,29 @@ fun SearchMedicineScreen(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        LazyColumn {
-            items(selectedMedicines) { medicine ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = medicine,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Color.Black,
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(onClick = { selectedMedicines = selectedMedicines - medicine }) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Remove Medicine",
-                            tint = Color.Red
+        if(showSelectedMedicineList) {
+            LazyColumn {
+                items(selectedMedicines) { medicine ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = medicine,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.Black,
+                            modifier = Modifier.weight(1f)
                         )
+                        IconButton(onClick = { selectedMedicines = selectedMedicines - medicine }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Remove Medicine",
+                                tint = Color.Red
+                            )
+                        }
                     }
                 }
             }
@@ -74,13 +77,15 @@ fun SearchMedicineScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { showMedicineDialog = true },
+            onClick = {
+                showMedicineDialog = true
+                showSelectedMedicineList = true },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text(text = "Select Medicine")
+            Text(text = "Add Medicine")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -95,6 +100,7 @@ fun SearchMedicineScreen(navController: NavController) {
                     PharmacyWithMedicine("Pharmacy C", "789 Oak St, City", "555-555-5555", 8),
                 )
                 showPharmacyList = true
+                showSelectedMedicineList = false
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -118,7 +124,7 @@ fun SearchMedicineScreen(navController: NavController) {
 
             LazyColumn {
                 items(pharmacies) { pharmacy ->
-                    PharmacyWithMedicineCard(pharmacy, navController)
+                    PharmacyWithMedicineCard(pharmacy, navController, selectedMedicines)
                 }
             }
         }

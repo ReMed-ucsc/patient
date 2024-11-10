@@ -24,12 +24,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import androidx.navigation.NavBackStackEntry
 import coil.compose.AsyncImage
 import com.example.remed.components.MedicineSelectionDialog
 
 @Composable
-fun OrderScreen(navController: NavController) {
-    var medicines by remember { mutableStateOf(listOf<String>()) }
+fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry) {
+    val selectedMedicineNames = backStackEntry.arguments?.getString("selectedMedicines") ?: ""
+    var medicines by remember { mutableStateOf(selectedMedicineNames.split(",").filter { it.isNotEmpty() }) }
     var showMedicineDialog by remember { mutableStateOf(false) }
     var prescriptionUploaded by remember { mutableStateOf(false) }
     var comments by remember { mutableStateOf(TextFieldValue("")) }

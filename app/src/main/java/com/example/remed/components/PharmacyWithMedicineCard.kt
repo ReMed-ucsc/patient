@@ -1,10 +1,6 @@
 package com.example.remed.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -21,7 +17,11 @@ import com.example.remed.navigation.HomeRouteScreens
 import com.example.remed.screens.PharmacyWithMedicine
 
 @Composable
-fun PharmacyWithMedicineCard(pharmacy: PharmacyWithMedicine, navController: NavController) {
+fun PharmacyWithMedicineCard(
+    pharmacy: PharmacyWithMedicine,
+    navController: NavController,
+    selectedMedicines: List<String>
+) {
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(8.dp),
@@ -61,7 +61,8 @@ fun PharmacyWithMedicineCard(pharmacy: PharmacyWithMedicine, navController: NavC
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    navController.navigate(HomeRouteScreens.PlaceOrder.route)
+                    val selectedMedicineNames = selectedMedicines.joinToString(",")
+                    navController.navigate("${HomeRouteScreens.PlaceOrder.route}/$selectedMedicineNames")
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)

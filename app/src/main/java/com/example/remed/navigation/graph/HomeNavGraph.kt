@@ -18,25 +18,21 @@ fun NavGraphBuilder.homeNavGraph(navController: NavController){
         startDestination = HomeRouteScreens.SearchMedicine.route,
         route = Graph.HOME
     ){
-        composable(route = HomeRouteScreens.SelectMedicine.route
-        ) {
+        composable(route = HomeRouteScreens.SelectMedicine.route) {
             SelectMedicinesScreen(navController = navController)
         }
 
-        composable(route = HomeRouteScreens.SearchMedicine.route
-        ){
+        composable(route = HomeRouteScreens.SearchMedicine.route) {
             SearchMedicineScreen(navController = navController)
         }
 
-        composable(route = HomeRouteScreens.SearchPharmacy.route
-        ){
+        composable(route = HomeRouteScreens.SearchPharmacy.route) {
             val orderViewModel: OrderViewModel = viewModel()
             SearchPharmacyScreen(navController = navController, viewModel = orderViewModel)
         }
 
-        composable(route = HomeRouteScreens.PlaceOrder.route
-        ){
-            OrderScreen(navController = navController)
+        composable(route = "${HomeRouteScreens.PlaceOrder.route}/{selectedMedicines}") { backStackEntry ->
+            OrderScreen(navController = navController, backStackEntry = backStackEntry)
         }
     }
 }
