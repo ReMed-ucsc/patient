@@ -8,12 +8,12 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface OrderAPI {
-    @POST("patient/getOrders.php")
+    @POST("patient/getOrders")
     suspend fun getOrders(
         @Header("Auth") authToken: String
     ) : Response<OrderList>
 
-    @GET("patient/searchNearbyPharmacies.php")
+    @GET("patient/searchNearbyPharmacies")
     suspend fun searchNearbyPharmacies(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double

@@ -61,7 +61,9 @@ fun PharmacyCard(pharmacy: PharmacyData, navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    navController.navigate(HomeRouteScreens.PlaceOrder.route)
+//                    navController.navigate(HomeRouteScreens.PlaceOrder.route)
+                    navController.navigate("${HomeRouteScreens.PlaceOrder.route}/")
+
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)

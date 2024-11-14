@@ -29,6 +29,5 @@ sealed class HomeRouteScreens(val route : String){
     object SearchMedicine : HomeRouteScreens(route = "SearchMedicine")
     object SearchPharmacy : HomeRouteScreens(route = "SearchPharmacy")
     object PlaceOrder : HomeRouteScreens(route = "PlaceOrder")
-
-
+    object ViewOrder : HomeRouteScreens(route = "ViewOrder")
 }

@@ -9,12 +9,12 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface AuthAPI {
-    @POST("patient/login.php")
+    @POST("patient/login")
     suspend fun login(
         @Body loginRequest: LoginRequest
     ) : Response<LoginModel>
 
-    @POST("patient/register.php")
+    @POST("patient/register")
     suspend fun register(
         @Body registerRequest: RegisterRequest
     ) : Response<AuthResult>

@@ -67,7 +67,7 @@ fun PharmacyWithMedicineCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text(text = "Place Order")
+                Text(text = "Proceed to Order")
             }
         }
     }

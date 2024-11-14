@@ -32,13 +32,20 @@ class AuthViewModel : ViewModel() {
             try {
                 val response = authAPI.login(LoginRequest(email, password))
                 if (response.isSuccessful) {
-                    response.body()?.let {
-//                        no errors while login
-                        if (!it.result.error) {
-                            _loginResponse.value = NetworkResponse.Success(it)
+                    val loginModel = response.body()
+                    if (loginModel != null) {
+                        val authResult = loginModel.result
+                        if (authResult != null) {
+                            if (!authResult.error) {
+                                _loginResponse.value = NetworkResponse.Success(loginModel)
+                            } else {
+                                _loginResponse.value = NetworkResponse.Error("Login failed: ${authResult.message}")
+                            }
                         } else {
-                            _loginResponse.value = NetworkResponse.Error("Login failed: ${it.result.message }")
+                            _loginResponse.value = NetworkResponse.Error("AuthResult is null")
                         }
+                    } else {
+                        _loginResponse.value = NetworkResponse.Error("LoginModel is null")
                     }
                 } else {
                     _loginResponse.value = NetworkResponse.Error("Login failed: ${response.message()}")

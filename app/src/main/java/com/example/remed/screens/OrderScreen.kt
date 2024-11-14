@@ -22,11 +22,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.NavBackStackEntry
 import coil.compose.AsyncImage
 import com.example.remed.components.MedicineSelectionDialog
+import com.example.remed.navigation.HomeRouteScreens
+import com.example.remed.navigation.MainRouteScreens
 
 @Composable
 fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry) {
@@ -46,7 +47,7 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry)
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+//            .background(Color.White)
             .padding(horizontal = 16.dp, vertical =  40.dp)
     ) {
         item {
@@ -156,6 +157,23 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry)
                     .background(Color.LightGray)
                     .padding(16.dp)
             )
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    // Navigate to HistoryScreen
+                    navController.navigate(MainRouteScreens.History.route)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(text = "Place Order")
+            }
         }
     }
 

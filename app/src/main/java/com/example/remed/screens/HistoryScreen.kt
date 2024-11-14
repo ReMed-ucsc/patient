@@ -42,6 +42,7 @@ import com.example.remed.datastore.StoreAccessToken
 import com.example.remed.models.OrderViewModel
 import com.example.remed.navigation.AuthRouteScreen
 import com.example.remed.navigation.Graph
+import com.example.remed.navigation.HomeRouteScreens
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 
@@ -107,12 +108,6 @@ fun History(navController: NavController, viewModel: OrderViewModel) {
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
-                            Text(
-                                text = "Date",
-                                modifier = Modifier.weight(1f),
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
                         }
                     }
 
@@ -126,7 +121,14 @@ fun History(navController: NavController, viewModel: OrderViewModel) {
                         ) {
                             Text(text = order.OrderID.toString(), modifier = Modifier.weight(1f))
                             Text(text = order.PharmacyID.toString(), modifier = Modifier.weight(2f)) // Using PharmacyID
-                            Text(text = order.date, modifier = Modifier.weight(1f)) // Using date
+                            Button(
+                                onClick = {
+                                    navController.navigate("${HomeRouteScreens.ViewOrder.route}/${order.OrderID}")
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(text = "View Order")
+                            }
                         }
                     }
                 }

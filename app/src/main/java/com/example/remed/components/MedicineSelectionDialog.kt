@@ -26,7 +26,11 @@ fun MedicineSelectionDialog(
     selectedMedicines: List<String>
 ) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-    val medicineList = listOf("Paracetamol", "Aspirin", "Ibuprofen", "Amoxicillin", "Metformin")
+    val medicineList = listOf(
+        "Paracetamol", "Aspirin", "Ibuprofen", "Amoxicillin", "Metformin",
+        "Lisinopril", "Levothyroxine", "Atorvastatin", "Metoprolol", "Omeprazole",
+        "Simvastatin", "Losartan", "Albuterol", "Gabapentin", "Hydrochlorothiazide"
+    )
 
     Dialog(onDismissRequest = { onDismiss() }) {
         Column(
@@ -61,21 +65,35 @@ fun MedicineSelectionDialog(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Column {
-                medicineList.filter {
+            if (searchQuery.text.length >= 2) {
+                val filteredList = medicineList.filter {
                     it.contains(searchQuery.text, ignoreCase = true)
-                }.forEach { medicine ->
-                    val isSelected = selectedMedicines.contains(medicine)
+                }
+
+                if (filteredList.isEmpty()) {
                     Text(
-                        text = medicine,
+                        text = "No matching medicines found",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Normal,
-                        color = if (isSelected) Color.Gray else Color.Black,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .clickable(enabled = !isSelected) { onMedicineSelected(medicine) }
+                        color = Color.Gray,
+                        modifier = Modifier.padding(8.dp)
                     )
+                } else {
+                    Column {
+                        filteredList.forEach { medicine ->
+                            val isSelected = selectedMedicines.contains(medicine)
+                            Text(
+                                text = medicine,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = if (isSelected) Color.Gray else Color.Black,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                                    .clickable(enabled = !isSelected) { onMedicineSelected(medicine) }
+                            )
+                        }
+                    }
                 }
             }
         }

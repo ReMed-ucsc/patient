@@ -8,10 +8,13 @@ import androidx.navigation.navigation
 import com.example.remed.models.OrderViewModel
 import com.example.remed.navigation.Graph
 import com.example.remed.navigation.HomeRouteScreens
+import com.example.remed.navigation.MainRouteScreens
 import com.example.remed.screens.OrderScreen
 import com.example.remed.screens.SearchMedicineScreen
 import com.example.remed.screens.SearchPharmacyScreen
 import com.example.remed.screens.SelectMedicinesScreen
+import com.example.remed.screens.History
+import com.example.remed.screens.ViewOrderScreen
 
 fun NavGraphBuilder.homeNavGraph(navController: NavController){
     navigation(
@@ -33,6 +36,15 @@ fun NavGraphBuilder.homeNavGraph(navController: NavController){
 
         composable(route = "${HomeRouteScreens.PlaceOrder.route}/{selectedMedicines}") { backStackEntry ->
             OrderScreen(navController = navController, backStackEntry = backStackEntry)
+        }
+
+        composable(route = MainRouteScreens.History.route) {
+            val orderViewModel: OrderViewModel = viewModel()
+            History(navController = navController, viewModel = orderViewModel)
+        }
+
+        composable(route = "${HomeRouteScreens.ViewOrder.route}/{orderId}") { backStackEntry ->
+            ViewOrderScreen(navController = navController, orderId = backStackEntry.arguments?.getString("orderId") ?: "")
         }
     }
 }
