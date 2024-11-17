@@ -13,14 +13,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.remed.api.order.MedicineProduct
+import com.example.remed.api.order.PharmacyData
 import com.example.remed.navigation.HomeRouteScreens
-import com.example.remed.screens.PharmacyWithMedicine
+import com.google.gson.Gson
 
 @Composable
 fun PharmacyWithMedicineCard(
-    pharmacy: PharmacyWithMedicine,
+    pharmacy: PharmacyData,
     navController: NavController,
-    selectedMedicines: List<String>
+    selectedMedicines: List<MedicineProduct>
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -54,15 +56,18 @@ fun PharmacyWithMedicineCard(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Available: ${pharmacy.availableMedicines} units",
+                text = "Available: ${pharmacy.availableCount} units",
                 fontSize = 16.sp,
                 color = Color.Gray
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
+//  Serialize the list of MedicineProduct objects to a JSON string and pass it as a navigation argument
                 onClick = {
-                    val selectedMedicineNames = selectedMedicines.joinToString(",")
-                    navController.navigate("${HomeRouteScreens.PlaceOrder.route}/$selectedMedicineNames")
+                    val gson = Gson()
+                    val selectedMedicinesJson = gson.toJson(selectedMedicines)
+                    val pharmacyJson = gson.toJson(pharmacy)
+                    navController.navigate("${HomeRouteScreens.PlaceOrder.route}/$selectedMedicinesJson/$pharmacyJson")
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)

@@ -1,3 +1,4 @@
+// SearchMedicineScreen.kt
 package com.example.remed.screens
 
 import androidx.compose.foundation.background
@@ -15,17 +16,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
+import com.example.remed.api.order.MedicineProduct
 import com.example.remed.navigation.HomeRouteScreens
 import com.example.remed.components.MedicineSelectionDialog
 import com.example.remed.components.PharmacyWithMedicineCard
+import com.example.remed.models.OrderViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.remed.api.NetworkResponse
 
 @Composable
-fun SearchMedicineScreen(navController: NavController) {
-    var selectedMedicines by remember { mutableStateOf(listOf<String>()) }
-    var pharmacies by remember { mutableStateOf(listOf<PharmacyWithMedicine>()) }
+fun SearchMedicineScreen(navController: NavController, viewModel: OrderViewModel = viewModel()) {
+    var selectedMedicines by remember { mutableStateOf(listOf<MedicineProduct>()) }
+    val pharmacyWithMedicineListResponse by viewModel.pharmacyWithMedicineListResponse.observeAsState()
     var showSelectedMedicineList by remember { mutableStateOf(true) }
     var showPharmacyList by remember { mutableStateOf(false) }
     var showMedicineDialog by remember { mutableStateOf(false) }
@@ -33,11 +39,9 @@ fun SearchMedicineScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
             .padding(horizontal = 16.dp, vertical =  40.dp)
     ) {
         // Medicine search bar
-
         Text(
             text = "Enter Medicine",
             fontSize = 20.sp,
@@ -56,7 +60,7 @@ fun SearchMedicineScreen(navController: NavController) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = medicine,
+                            text = medicine.ProductName,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Normal,
                             color = Color.Black,
@@ -93,12 +97,8 @@ fun SearchMedicineScreen(navController: NavController) {
         // Search Button
         Button(
             onClick = {
-                // Simulate fetching pharmacies with the selected medicine
-                pharmacies = listOf(
-                    PharmacyWithMedicine("Pharmacy A", "123 Main St, City", "123-456-7890", 10),
-                    PharmacyWithMedicine("Pharmacy B", "456 Elm St, City", "987-654-3210", 5),
-                    PharmacyWithMedicine("Pharmacy C", "789 Oak St, City", "555-555-5555", 8),
-                )
+                val productIds = selectedMedicines.map { it.ProductID }
+                viewModel.searchPharmacies(productIDs = productIds)
                 showPharmacyList = true
                 showSelectedMedicineList = false
             },
@@ -114,18 +114,36 @@ fun SearchMedicineScreen(navController: NavController) {
 
         // Pharmacies List using LazyColumn
         if (showPharmacyList) {
-            Text(
-                text = "Pharmacies with Selected Medicine",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            when (val result = pharmacyWithMedicineListResponse) {
+                is NetworkResponse.Success -> {
+                    val pharmacies = result.data.data
+                    Text(
+                        text = "Pharmacies with Selected Medicine",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
 
-            LazyColumn {
-                items(pharmacies) { pharmacy ->
-                    PharmacyWithMedicineCard(pharmacy, navController, selectedMedicines)
+                    LazyColumn {
+                        items(pharmacies) { pharmacy ->
+                            PharmacyWithMedicineCard(pharmacy, navController, selectedMedicines)
+                        }
+                    }
                 }
+                is NetworkResponse.Error -> {
+                    Text(
+                        text = "Failed to load pharmacies: ${result.message}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Color.Red,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+                is NetworkResponse.Loading -> {
+                    CircularProgressIndicator()
+                }
+                null -> {}
             }
         }
     }
@@ -141,10 +159,3 @@ fun SearchMedicineScreen(navController: NavController) {
         )
     }
 }
-
-data class PharmacyWithMedicine(
-    val name: String,
-    val address: String,
-    val contact: String,
-    val availableMedicines: Int
-)

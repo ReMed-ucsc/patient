@@ -1,3 +1,4 @@
+// MedicineSelectionDialog.kt
 package com.example.remed.components
 
 import androidx.compose.foundation.background
@@ -9,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,19 +20,25 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.remed.api.NetworkResponse
+import com.example.remed.api.order.MedicineProduct
+import com.example.remed.models.OrderViewModel
 
 @Composable
 fun MedicineSelectionDialog(
     onDismiss: () -> Unit,
-    onMedicineSelected: (String) -> Unit,
-    selectedMedicines: List<String>
+    onMedicineSelected: (MedicineProduct) -> Unit,
+    selectedMedicines: List<MedicineProduct>,
+    viewModel: OrderViewModel = viewModel()
 ) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-    val medicineList = listOf(
-        "Paracetamol", "Aspirin", "Ibuprofen", "Amoxicillin", "Metformin",
-        "Lisinopril", "Levothyroxine", "Atorvastatin", "Metoprolol", "Omeprazole",
-        "Simvastatin", "Losartan", "Albuterol", "Gabapentin", "Hydrochlorothiazide"
-    )
+    val medicineListResponse by viewModel.medicineListResponse.observeAsState()
+
+    // Call getMedicines when the search query changes
+    LaunchedEffect(searchQuery.text) {
+        viewModel.getMedicines(searchQuery.text)
+    }
 
     Dialog(onDismissRequest = { onDismiss() }) {
         Column(
@@ -65,36 +73,52 @@ fun MedicineSelectionDialog(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (searchQuery.text.length >= 2) {
-                val filteredList = medicineList.filter {
-                    it.contains(searchQuery.text, ignoreCase = true)
-                }
+            when (val result = medicineListResponse) {
+                is NetworkResponse.Success -> {
+                    val medicineList = result.data.data
+                    val filteredList = medicineList.filter {
+                        it.ProductName.contains(searchQuery.text, ignoreCase = true)
+                    }
 
-                if (filteredList.isEmpty()) {
-                    Text(
-                        text = "No matching medicines found",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                } else {
-                    Column {
-                        filteredList.forEach { medicine ->
-                            val isSelected = selectedMedicines.contains(medicine)
-                            Text(
-                                text = medicine,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = if (isSelected) Color.Gray else Color.Black,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp)
-                                    .clickable(enabled = !isSelected) { onMedicineSelected(medicine) }
-                            )
+                    if (filteredList.isEmpty()) {
+                        Text(
+                            text = "No matching medicines found",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    } else {
+                        Column {
+                            filteredList.forEach { medicine ->
+                                val isSelected = selectedMedicines.contains(medicine)
+                                Text(
+                                    text = medicine.ProductName,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = if (isSelected) Color.Gray else Color.Black,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp)
+                                        .clickable(enabled = !isSelected) { onMedicineSelected(medicine) }
+                                )
+                            }
                         }
                     }
                 }
+                is NetworkResponse.Error -> {
+                    Text(
+                        text = "Failed to load medicines: ${result.message}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Color.Red,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+                is NetworkResponse.Loading -> {
+                    CircularProgressIndicator()
+                }
+                null -> {}
             }
         }
     }

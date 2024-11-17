@@ -25,19 +25,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.remed.api.order.Medicine
+import com.example.remed.api.order.MedicineProduct
 
 
 @Composable
 fun SelectMedicinesScreen(navController: NavController) {
     val medicines = listOf(
-        Medicine(1, "Paracetamol"),
-        Medicine(2, "Ibuprofen"),
-        Medicine(3, "Aspirin"),
-        Medicine(4, "Amoxicillin")
+        MedicineProduct(1, "Paracetamol"),
+        MedicineProduct(2, "Ibuprofen"),
+        MedicineProduct(3, "Aspirin"),
+        MedicineProduct(4, "Amoxicillin")
     )
 
-    val selectedMedicines = remember { mutableStateListOf<Medicine>() }
+    val selectedMedicines = remember { mutableStateListOf<MedicineProduct>() }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Select Medicines", fontSize = 24.sp, fontWeight = FontWeight.Bold)
@@ -65,7 +65,7 @@ fun SelectMedicinesScreen(navController: NavController) {
         Text("Selected Medicines:", fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
         for (medicine in selectedMedicines) {
-            Text("- ${medicine.name}")
+            Text("- ${medicine.ProductName}")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -82,7 +82,7 @@ fun SelectMedicinesScreen(navController: NavController) {
 
 
 @Composable
-fun MedicineItem(medicine: Medicine, isSelected: Boolean, onItemClick: () -> Unit) {
+fun MedicineItem(medicine: MedicineProduct, isSelected: Boolean, onItemClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -92,6 +92,6 @@ fun MedicineItem(medicine: Medicine, isSelected: Boolean, onItemClick: () -> Uni
     ) {
         Checkbox(checked = isSelected, onCheckedChange = { onItemClick() })
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = medicine.name, fontSize = 18.sp)
+        Text(text = medicine.ProductName, fontSize = 18.sp)
     }
 }

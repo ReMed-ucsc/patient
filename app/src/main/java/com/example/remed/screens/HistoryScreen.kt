@@ -1,3 +1,4 @@
+// HistoryScreen.kt
 package com.example.remed.screens
 
 import android.util.Log
@@ -14,8 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-//noinspection UsingMaterialAndMaterial3Libraries
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -108,6 +107,12 @@ fun History(navController: NavController, viewModel: OrderViewModel) {
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
+                            Text(
+                                text = "Date",
+                                modifier = Modifier.weight(2f),
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
                         }
                     }
 
@@ -116,19 +121,14 @@ fun History(navController: NavController, viewModel: OrderViewModel) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp)
-                                .clickable { /* Handle click here if needed */ },
+                                .clickable {
+                                    navController.navigate("${HomeRouteScreens.ViewOrder.route}/${order.OrderID}")
+                                },
                             horizontalArrangement= Arrangement.SpaceBetween
                         ) {
                             Text(text = order.OrderID.toString(), modifier = Modifier.weight(1f))
                             Text(text = order.PharmacyID.toString(), modifier = Modifier.weight(2f)) // Using PharmacyID
-                            Button(
-                                onClick = {
-                                    navController.navigate("${HomeRouteScreens.ViewOrder.route}/${order.OrderID}")
-                                },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(text = "View Order")
-                            }
+                            Text(text = order.date, modifier = Modifier.weight(2f))
                         }
                     }
                 }

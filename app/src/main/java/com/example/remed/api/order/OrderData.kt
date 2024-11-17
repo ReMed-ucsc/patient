@@ -10,3 +10,8 @@ data class OrderData(
     val pickup: String,
     val status: String
 )
+
+data class Order(
+    val orderDetails: OrderData,
+    val productDetails: List<MedicineProduct>
+)

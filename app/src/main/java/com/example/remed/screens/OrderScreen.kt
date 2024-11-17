@@ -1,6 +1,9 @@
+// OrderScreen.kt
 package com.example.remed.screens
 
 import android.net.Uri
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,7 +13,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -25,18 +31,33 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavBackStackEntry
 import coil.compose.AsyncImage
+import com.example.remed.api.order.MedicineProduct
+import com.example.remed.api.order.OrderBody
+import com.example.remed.api.order.PharmacyData
 import com.example.remed.components.MedicineSelectionDialog
-import com.example.remed.navigation.HomeRouteScreens
+import com.example.remed.datastore.StoreAccessToken
+import com.example.remed.models.OrderViewModel
 import com.example.remed.navigation.MainRouteScreens
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.runBlocking
 
 @Composable
-fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry) {
-    val selectedMedicineNames = backStackEntry.arguments?.getString("selectedMedicines") ?: ""
-    var medicines by remember { mutableStateOf(selectedMedicineNames.split(",").filter { it.isNotEmpty() }) }
+fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry, viewModel: OrderViewModel) {
+    val selectedMedicinesJson = backStackEntry.arguments?.getString("selectedMedicines") ?: ""
+    val pharmacyJson = backStackEntry.arguments?.getString("pharmacy") ?: ""
+    val gson = Gson()
+    val typeMedicine = object : TypeToken<List<MedicineProduct>>() {}.type
+    val typePharmacy = object : TypeToken<PharmacyData>() {}.type
+    var medicines by remember { mutableStateOf(gson.fromJson<List<MedicineProduct>>(selectedMedicinesJson, typeMedicine)) }
+    var pharmacy by remember { mutableStateOf(gson.fromJson<PharmacyData>(pharmacyJson, typePharmacy)) }
     var showMedicineDialog by remember { mutableStateOf(false) }
     var prescriptionUploaded by remember { mutableStateOf(false) }
     var comments by remember { mutableStateOf(TextFieldValue("")) }
     var addedPrescriptionUri by remember { mutableStateOf<Uri?>(null) }
+    var isPickup by remember { mutableStateOf(true) }
+    var destination by remember { mutableStateOf(TextFieldValue("")) }
     val prescriptionPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
@@ -44,10 +65,21 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry)
         }
     )
 
+    val context = LocalContext.current
+    val dataStore = StoreAccessToken(context)
+    var accessToken by remember { mutableStateOf<String?>(null) }
+
+    // Fetch the access token and call API only once
+    LaunchedEffect(key1 = Unit) { // Use a key to prevent recomposition triggers
+        accessToken = runBlocking { dataStore.getAccessToken.firstOrNull() }
+    }
+
+    // List to hold quantities
+    var quantities by remember { mutableStateOf(medicines.map { mutableStateOf(1) }.toMutableList()) }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-//            .background(Color.White)
             .padding(horizontal = 16.dp, vertical =  40.dp)
     ) {
         item {
@@ -68,13 +100,25 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry)
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = medicines[index],
+                    text = medicines[index].ProductName,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Normal,
                     color = Color.Black,
                     modifier = Modifier.weight(1f)
                 )
-                IconButton(onClick = { medicines = medicines - medicines[index] }) {
+                Spacer(modifier = Modifier.width(8.dp))
+                IconButton(onClick = { if (quantities[index].value > 1) quantities[index].value-- }) {
+                    Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrease Quantity")
+                }
+                Text(text = quantities[index].value.toString(), fontSize = 16.sp, fontWeight = FontWeight.Normal)
+                IconButton(onClick = { quantities[index].value++ }) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Increase Quantity")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                IconButton(onClick = {
+                    medicines = medicines - medicines[index]
+                    quantities.removeAt(index)
+                }) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Remove Medicine",
@@ -96,6 +140,36 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry)
             ) {
                 Text(text = "Add Medicine")
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Selected Pharmacy",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Name: ${pharmacy.name}",
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
+            Text(
+                text = "Address: ${pharmacy.address}",
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
+            Text(
+                text = "Contact: ${pharmacy.contact}",
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
+            Text(
+                text = "Available: ${pharmacy.availableCount} units",
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -162,10 +236,77 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry)
         item {
             Spacer(modifier = Modifier.height(16.dp))
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Pickup",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(
+                    checked = isPickup,
+                    onCheckedChange = { isPickup = it }
+                )
+            }
+
+            if (!isPickup) {
+                Spacer(modifier = Modifier.height(8.dp))
+                BasicTextField(
+                    value = destination.text,
+                    onValueChange = { destination = TextFieldValue(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.LightGray)
+                        .padding(16.dp),
+                    decorationBox = { innerTextField ->
+                        if (destination.text.isEmpty()) {
+                            Text(text = "Enter Destination", color = Color.Gray)
+                        }
+                        innerTextField()
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = {
-                    // Navigate to HistoryScreen
-                    navController.navigate(MainRouteScreens.History.route)
+                    // Collect data
+                    val productIds = medicines.map { it.ProductID }
+                    val quantitiesList = quantities.map { it.value }
+                    val destinationText = if (isPickup) null else destination.text
+                    val pharmacyId = pharmacy.PharmacyID
+
+                    // Create OrderBody
+                    val orderBody = OrderBody(
+                        productIDs = productIds,
+                        quantities = quantitiesList,
+                        destination = destinationText,
+                        pharmacyID = pharmacyId,
+                        pickup = isPickup,
+                        comments = comments.text,
+                        prescriptionUri = addedPrescriptionUri?.toString()
+                    )
+
+                    Log.d("OrderScreen", "OrderBody: $orderBody")
+
+                    // Call createOrder function
+                    accessToken?.let {
+                        viewModel.createOrder(it, orderBody) { success ->
+                            if (success) {
+                                Toast.makeText(context, "Order placed successfully", Toast.LENGTH_SHORT).show()
+                                navController.navigate(MainRouteScreens.History.route)
+                            } else {
+                                Toast.makeText(context, "Failed to place order", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -182,6 +323,7 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry)
             onDismiss = { showMedicineDialog = false },
             onMedicineSelected = { medicine ->
                 medicines = medicines + medicine
+                quantities.add(mutableStateOf(1)) // Add default quantity for new medicine
                 showMedicineDialog = false
             },
             selectedMedicines = medicines

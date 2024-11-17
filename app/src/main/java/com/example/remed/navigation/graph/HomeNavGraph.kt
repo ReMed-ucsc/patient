@@ -16,11 +16,12 @@ import com.example.remed.screens.SelectMedicinesScreen
 import com.example.remed.screens.History
 import com.example.remed.screens.ViewOrderScreen
 
-fun NavGraphBuilder.homeNavGraph(navController: NavController){
+// HomeNavGraph.kt
+fun NavGraphBuilder.homeNavGraph(navController: NavController) {
     navigation(
         startDestination = HomeRouteScreens.SearchMedicine.route,
         route = Graph.HOME
-    ){
+    ) {
         composable(route = HomeRouteScreens.SelectMedicine.route) {
             SelectMedicinesScreen(navController = navController)
         }
@@ -34,8 +35,9 @@ fun NavGraphBuilder.homeNavGraph(navController: NavController){
             SearchPharmacyScreen(navController = navController, viewModel = orderViewModel)
         }
 
-        composable(route = "${HomeRouteScreens.PlaceOrder.route}/{selectedMedicines}") { backStackEntry ->
-            OrderScreen(navController = navController, backStackEntry = backStackEntry)
+        composable(route = "${HomeRouteScreens.PlaceOrder.route}/{selectedMedicines}/{pharmacy}") { backStackEntry ->
+            val orderViewModel: OrderViewModel = viewModel()
+            OrderScreen(navController = navController, backStackEntry = backStackEntry, viewModel = orderViewModel)
         }
 
         composable(route = MainRouteScreens.History.route) {
@@ -44,7 +46,8 @@ fun NavGraphBuilder.homeNavGraph(navController: NavController){
         }
 
         composable(route = "${HomeRouteScreens.ViewOrder.route}/{orderId}") { backStackEntry ->
-            ViewOrderScreen(navController = navController, orderId = backStackEntry.arguments?.getString("orderId") ?: "")
+            val orderViewModel: OrderViewModel = viewModel()
+            ViewOrderScreen(navController = navController, orderId = backStackEntry.arguments?.getString("orderId") ?: "", viewModel = orderViewModel)
         }
     }
 }
