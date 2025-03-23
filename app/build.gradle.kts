@@ -89,6 +89,10 @@ dependencies {
 //    datastore
     implementation(libs.androidx.datastore.preferences)
 
+//    image loading
+    implementation(libs.coil.compose)
+
+    implementation(libs.places)
 
 
 }

@@ -1,10 +1,7 @@
+// PharmacyCard.kt
 package com.example.remed.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -19,6 +16,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.remed.api.order.PharmacyData
 import com.example.remed.navigation.HomeRouteScreens
+import com.google.gson.Gson
 
 @Composable
 fun PharmacyCard(pharmacy: PharmacyData, navController: NavController) {
@@ -61,9 +59,9 @@ fun PharmacyCard(pharmacy: PharmacyData, navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-//                    navController.navigate(HomeRouteScreens.PlaceOrder.route)
-                    navController.navigate("${HomeRouteScreens.PlaceOrder.route}/")
-
+                    val gson = Gson()
+                    val pharmacyJson = gson.toJson(pharmacy)
+                    navController.navigate("${HomeRouteScreens.PlaceOrder.route}/[]/$pharmacyJson")
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)

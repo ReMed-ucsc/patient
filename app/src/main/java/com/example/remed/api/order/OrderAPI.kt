@@ -1,10 +1,14 @@
 package com.example.remed.api.order
 
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Query
 
 interface OrderAPI {
@@ -23,7 +27,7 @@ interface OrderAPI {
     suspend fun searchPharmacies(
         @Query("latitude") latitude: Double,
         @Query("longitude") longitude: Double,
-        @Query("productIDs") productIDs: List<Int>
+        @Query("productIDs") productIDs: String
     ) : Response<PharmacyList>
 
     @GET("medicine/getMedicines")
@@ -31,10 +35,18 @@ interface OrderAPI {
         @Query("search") search: String
     ) : Response<MedicineList>
 
+    @Multipart
     @POST("order/createOrder")
     suspend fun placeOrder(
-        @Header("Auth") authToken: String,
-        @Body order: OrderBody
+        @Header ("Auth") authToken: String,
+        @Part ("order") order: RequestBody,
+        @Part prescription: MultipartBody.Part?
+    ) : Response<CreateOrder>
+
+    @POST("order/updateOrder")
+    suspend fun updateOrder(
+        @Header ("Auth") authToken: String,
+        @Body order: UpdateOrderBody
     ) : Response<CreateOrder>
 
     @GET("order/getOrder")
@@ -42,4 +54,10 @@ interface OrderAPI {
         @Header("Auth") authToken: String,
         @Query("OrderID") orderID: Int
     ) : Response<OrderResult>
+
+    @POST("order/commentOrder")
+    suspend fun sendMessage(
+        @Header("Auth") authToken: String,
+        @Body messageBody: CommentBody
+    ): Response<CommentResult>
 }

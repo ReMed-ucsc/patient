@@ -11,12 +11,16 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import com.example.remed.navigation.graph.RootNavGraph
 import com.example.remed.ui.theme.ReMedTheme
+import com.google.android.libraries.places.api.Places
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         installSplashScreen()
+
+//        Places.initialize(applicationContext, "")
+
 
 //        val loginViewModel = ViewModelProvider(this)[LoginViewModel::class.java]
 

@@ -1,5 +1,6 @@
 package com.example.remed.models
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -17,10 +18,10 @@ class AuthViewModel : ViewModel() {
 
 
     //    private variable to observe state of register
-    private val _registerResponse = MutableLiveData<NetworkResponse<AuthResult>>()
+    private val _registerResponse = MutableLiveData<NetworkResponse<LoginModel>>()
 
     //    public variable to expose to UI
-    val registerResponse: LiveData<NetworkResponse<AuthResult>> = _registerResponse
+    val registerResponse: LiveData<NetworkResponse<LoginModel>> = _registerResponse
 
     private val _loginResponse = MutableLiveData<NetworkResponse<LoginModel>>()
     val loginResponse: LiveData<NetworkResponse<LoginModel>> = _loginResponse
@@ -31,6 +32,8 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = authAPI.login(LoginRequest(email, password))
+                Log.d("LoginScreen", "Response Body: ${response.body()}")
+
                 if (response.isSuccessful) {
                     val loginModel = response.body()
                     if (loginModel != null) {
@@ -62,13 +65,16 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = authAPI.register(RegisterRequest(name, email, password))
+                Log.d("RegisterScreen", "Response Body: ${response.body()}")
+
                 if (response.isSuccessful) {
                     response.body()?.let {
 //                        no errors while login
-                        if (!it.error) {
+                        if (!it.result.error) {
+
                             _registerResponse.value = NetworkResponse.Success(it)
                         } else {
-                            _registerResponse.value = NetworkResponse.Error("Register failed: ${it.message }")
+                            _registerResponse.value = NetworkResponse.Error("Register failed: ${it.result.message }")
                         }
                     }
                 } else {

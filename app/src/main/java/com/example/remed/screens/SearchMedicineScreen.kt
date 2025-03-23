@@ -1,6 +1,7 @@
 // SearchMedicineScreen.kt
 package com.example.remed.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +28,7 @@ import com.example.remed.components.PharmacyWithMedicineCard
 import com.example.remed.models.OrderViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.remed.api.NetworkResponse
+import com.example.remed.api.order.PharmacyData
 
 @Composable
 fun SearchMedicineScreen(navController: NavController, viewModel: OrderViewModel = viewModel()) {
@@ -116,7 +118,7 @@ fun SearchMedicineScreen(navController: NavController, viewModel: OrderViewModel
         if (showPharmacyList) {
             when (val result = pharmacyWithMedicineListResponse) {
                 is NetworkResponse.Success -> {
-                    val pharmacies = result.data.data
+                    val pharmacies : List<PharmacyData> = result.data.data
                     Text(
                         text = "Pharmacies with Selected Medicine",
                         fontSize = 20.sp,
@@ -125,6 +127,7 @@ fun SearchMedicineScreen(navController: NavController, viewModel: OrderViewModel
                     )
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    Log.d("SearchPharmacy", "Pharmacies: $pharmacies")
                     LazyColumn {
                         items(pharmacies) { pharmacy ->
                             PharmacyWithMedicineCard(pharmacy, navController, selectedMedicines)

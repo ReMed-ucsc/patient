@@ -14,3 +14,8 @@ data class OrderResult(
     val `data`: Order,
     val result: Result
 )
+
+data class CommentResult(
+    val `data`: OrderID,
+    val result: Result
+)

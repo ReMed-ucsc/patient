@@ -55,11 +55,22 @@ fun PharmacyWithMedicineCard(
                 color = Color.Gray
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Available: ${pharmacy.availableCount} units",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
+
+            if(pharmacy.notAvailableMedicineCount?.toInt() == 0) {
+                Text(
+                    text = "All medicines are available",
+                    fontSize = 16.sp,
+                    color = Color.Gray
+                )
+            }else {
+//                print not available medicine list using pharmacy.notAvailableProducts
+
+                Text(
+                    text = "Not available product: ${pharmacy.notAvailableProducts}",
+                    fontSize = 16.sp,
+                    color = Color.Gray
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
 //  Serialize the list of MedicineProduct objects to a JSON string and pass it as a navigation argument

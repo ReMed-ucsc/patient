@@ -28,70 +28,70 @@ import androidx.navigation.NavController
 import com.example.remed.api.order.MedicineProduct
 
 
-@Composable
-fun SelectMedicinesScreen(navController: NavController) {
-    val medicines = listOf(
-        MedicineProduct(1, "Paracetamol"),
-        MedicineProduct(2, "Ibuprofen"),
-        MedicineProduct(3, "Aspirin"),
-        MedicineProduct(4, "Amoxicillin")
-    )
-
-    val selectedMedicines = remember { mutableStateListOf<MedicineProduct>() }
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Select Medicines", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LazyColumn {
-            items(medicines) { medicine ->
-                MedicineItem(
-                    medicine = medicine,
-                    isSelected = selectedMedicines.contains(medicine),
-                    onItemClick = {
-                        if (selectedMedicines.contains(medicine)) {
-                            selectedMedicines.remove(medicine)
-                        } else {
-                            selectedMedicines.add(medicine)
-                        }
-                    }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text("Selected Medicines:", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-
-        for (medicine in selectedMedicines) {
-            Text("- ${medicine.ProductName}")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = {
-            // Navigate back to HomeScreen or perform an action with the selected medicines
-            navController.navigateUp()
-        }) {
-            Text("Confirm Selection")
-        }
-    }
-}
-
-
-
-@Composable
-fun MedicineItem(medicine: MedicineProduct, isSelected: Boolean, onItemClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onItemClick)
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Checkbox(checked = isSelected, onCheckedChange = { onItemClick() })
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = medicine.ProductName, fontSize = 18.sp)
-    }
-}
+//@Composable
+//fun SelectMedicinesScreen(navController: NavController) {
+//    val medicines = listOf(
+//        MedicineProduct(1, "Paracetamol"),
+//        MedicineProduct(2, "Ibuprofen"),
+//        MedicineProduct(3, "Aspirin"),
+//        MedicineProduct(4, "Amoxicillin")
+//    )
+//
+//    val selectedMedicines = remember { mutableStateListOf<MedicineProduct>() }
+//
+//    Column(modifier = Modifier.padding(16.dp)) {
+//        Text("Select Medicines", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+//
+//        Spacer(modifier = Modifier.height(16.dp))
+//
+//        LazyColumn {
+//            items(medicines) { medicine ->
+//                MedicineItem(
+//                    medicine = medicine,
+//                    isSelected = selectedMedicines.contains(medicine),
+//                    onItemClick = {
+//                        if (selectedMedicines.contains(medicine)) {
+//                            selectedMedicines.remove(medicine)
+//                        } else {
+//                            selectedMedicines.add(medicine)
+//                        }
+//                    }
+//                )
+//            }
+//        }
+//
+//        Spacer(modifier = Modifier.height(16.dp))
+//
+//        Text("Selected Medicines:", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+//
+//        for (medicine in selectedMedicines) {
+//            Text("- ${medicine.ProductName}")
+//        }
+//
+//        Spacer(modifier = Modifier.height(16.dp))
+//
+//        Button(onClick = {
+//            // Navigate back to HomeScreen or perform an action with the selected medicines
+//            navController.navigateUp()
+//        }) {
+//            Text("Confirm Selection")
+//        }
+//    }
+//}
+//
+//
+//
+//@Composable
+//fun MedicineItem(medicine: MedicineProduct, isSelected: Boolean, onItemClick: () -> Unit) {
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .clickable(onClick = onItemClick)
+//            .padding(8.dp),
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//        Checkbox(checked = isSelected, onCheckedChange = { onItemClick() })
+//        Spacer(modifier = Modifier.width(8.dp))
+//        Text(text = medicine.ProductName, fontSize = 18.sp)
+//    }
+//}

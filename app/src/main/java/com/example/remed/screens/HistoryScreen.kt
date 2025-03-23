@@ -102,8 +102,8 @@ fun History(navController: NavController, viewModel: OrderViewModel) {
                                 color = Color.White
                             )
                             Text(
-                                text = "PharmacyID",
-                                modifier = Modifier.weight(2f),
+                                text = "Status",
+                                modifier = Modifier.weight(2f).padding(start = 16.dp),
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
@@ -126,8 +126,8 @@ fun History(navController: NavController, viewModel: OrderViewModel) {
                                 },
                             horizontalArrangement= Arrangement.SpaceBetween
                         ) {
-                            Text(text = order.OrderID.toString(), modifier = Modifier.weight(1f))
-                            Text(text = order.PharmacyID.toString(), modifier = Modifier.weight(2f)) // Using PharmacyID
+                            Text(text = order.OrderID.toString(), modifier = Modifier.weight(1f).padding(start = 16.dp))
+                            Text(text = order.status, modifier = Modifier.weight(2f)) // Using PharmacyID
                             Text(text = order.date, modifier = Modifier.weight(2f))
                         }
                     }

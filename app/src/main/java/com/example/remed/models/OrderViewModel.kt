@@ -1,5 +1,7 @@
 package com.example.remed.models
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -7,13 +9,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.remed.api.NetworkResponse
 import com.example.remed.api.RetrofitInstance
+import com.example.remed.api.order.Comment
+import com.example.remed.api.order.CommentBody
+import com.example.remed.api.order.CommentResult
 import com.example.remed.api.order.CreateOrder
 import com.example.remed.api.order.MedicineList
 import com.example.remed.api.order.OrderBody
 import com.example.remed.api.order.OrderList
 import com.example.remed.api.order.OrderResult
 import com.example.remed.api.order.PharmacyList
+import com.example.remed.api.order.UpdateOrderBody
+import com.example.remed.util.uploadImage
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import com.example.remed.util.uriToFile
 
 class OrderViewModel : ViewModel() {
     private val orderAPI = RetrofitInstance.orderAPI
@@ -34,8 +48,14 @@ class OrderViewModel : ViewModel() {
     private val _createOrderResponse = MutableLiveData<NetworkResponse<CreateOrder>>()
     val createOrderResponse: LiveData<NetworkResponse<CreateOrder>> = _createOrderResponse
 
+    private val _updateOrderResponse = MutableLiveData<NetworkResponse<CreateOrder>>()
+    val updateOrderResponse: LiveData<NetworkResponse<CreateOrder>> = _updateOrderResponse
+
     private val _getOrderResponse = MutableLiveData<NetworkResponse<OrderResult>>()
     val getOrderResponse: LiveData<NetworkResponse<OrderResult>> = _getOrderResponse
+
+    private val _getMessageResponse = MutableLiveData<NetworkResponse<CommentResult>>()
+    val getMessageResponse: LiveData<NetworkResponse<CommentResult>> = _getMessageResponse
 
     fun getOrders(accessToken: String) {
         _ordersResponse.value = NetworkResponse.Loading
@@ -68,7 +88,7 @@ class OrderViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = orderAPI.searchNearbyPharmacies(lat, long)
-                Log.d("SearchPharmacy", "Response Body: ${response.body()}")
+                Log.d("SearchPharmacy", "Response Body for nearby: ${response.body()}")
                 if (response.isSuccessful) {
                     response.body()?.let {
                         if (!it.result.error) {
@@ -90,10 +110,14 @@ class OrderViewModel : ViewModel() {
         _pharmacyWithMedicineListResponse.value = NetworkResponse.Loading
 
         viewModelScope.launch {
-            try {
-                val response = orderAPI.searchPharmacies(lat, long, productIDs)
-                Log.d("SearchPharmacy", "Response Body: ${response.body()} productIDs: $productIDs")
+            try { // Log the productIDs
+
+                val response = orderAPI.searchPharmacies(lat, long, productIDs.joinToString(","))
+                Log.d("SearchPharmacy", "Response Body for search med: ${response.body()} productIDs: $productIDs")
+//                Log.d("SearchPharmacy", "Raw Response Body for search med: ${response.raw()}")
                 if (response.isSuccessful) {
+                    val rawResponse = response.raw().toString()
+                    Log.d("API Response", rawResponse) // Log the raw response
                     response.body()?.let {
                         if (!it.result.error) {
                             _pharmacyWithMedicineListResponse.value = NetworkResponse.Success(it)
@@ -137,27 +161,79 @@ class OrderViewModel : ViewModel() {
         }
     }
 
-    fun createOrder(accessToken: String, orderBody: OrderBody, onResult: (Boolean) -> Unit) {
+    fun createOrder(context: Context, accessToken: String, orderBody: OrderBody, prescriptionUri: Uri?, onResult: (Boolean) -> Unit) {
         _createOrderResponse.value = NetworkResponse.Loading
 
         viewModelScope.launch {
+//            val accessTokenBody = accessToken.toRequestBody("text/plain".toMediaTypeOrNull())
+            val orderBodyJson = Gson().toJson(orderBody)
+            Log.d("CreateOrder", "OrderBody JSON: $orderBodyJson") // Log the JSON payload
+            val orderBodyRequest = orderBodyJson.toRequestBody("application/json".toMediaTypeOrNull())
+
+            val prescriptionPart = prescriptionUri?.let {
+                val file = uploadImage(context, it)
+                val requestFile: RequestBody = file!!.asRequestBody("image/*".toMediaTypeOrNull())
+                MultipartBody.Part.createFormData("prescription", file.name, requestFile)
+            }
+
             try {
-                val response = orderAPI.placeOrder("Bearer $accessToken", orderBody)
+                val response = orderAPI.placeOrder("Bearer $accessToken", orderBodyRequest, prescriptionPart)
+                val rawResponseBody = response.errorBody()?.string() ?: response.body().toString()
+                Log.d("CreateOrder", "Raw Response Body: $rawResponseBody")
                 onResult(response.isSuccessful)
-                Log.d("CreateOrder", "Response Body: ${response.body()}")
                 if (response.isSuccessful) {
                     response.body()?.let {
                         if (!it.result.error) {
-                            _createOrderResponse.value = NetworkResponse.Success(it)
+                            _createOrderResponse.value = NetworkResponse.Success(response.body()!!)
+//                            onResult(true);
+                            Log.d("CreateOrder", "Order: ${it.data}")
                         } else {
+//                            onResult(false);
                             _createOrderResponse.value = NetworkResponse.Error("Failed: ${it.result.message}")
+                            Log.d("CreateOrder", "Failed: ${it.result.message}")
                         }
                     }
                 } else {
+//                    onResult(false);
                     _createOrderResponse.value = NetworkResponse.Error("Failed: ${response.message()}")
+                    Log.d("CreateOrder", "Failed: ${response.message()}")
                 }
             } catch (e: Exception) {
+                onResult(true);
                 _createOrderResponse.value = NetworkResponse.Error("Something went wrong: ${e.message.toString()}")
+                Log.d("CreateOrder", "Something went wrong: ${e.message.toString()}")
+            }
+        }
+    }
+
+    fun updateOrder(accessToken: String, orderBody: UpdateOrderBody, onResult: (Boolean) -> Unit) {
+        _updateOrderResponse.value = NetworkResponse.Loading
+
+        viewModelScope.launch {
+            val orderBodyJson = Gson().toJson(orderBody)
+            Log.d("UpdateOrder", "OrderBody JSON: $orderBodyJson") // Log the JSON payload
+            val orderBodyRequest = orderBodyJson.toRequestBody("application/json".toMediaTypeOrNull())
+
+            try {
+                val response = orderAPI.updateOrder("Bearer $accessToken", orderBody)
+                Log.d("UpdateOrder", "Response Body: ${response.body()}")
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        if (!it.result.error) {
+                            _updateOrderResponse.value = NetworkResponse.Success(it)
+                            onResult(true)
+                        } else {
+                            _updateOrderResponse.value = NetworkResponse.Error("Failed: ${it.result.message}")
+                            onResult(false)
+                        }
+                    }
+                } else {
+                    _updateOrderResponse.value = NetworkResponse.Error("Failed: ${response.message()}")
+                    onResult(false)
+                }
+            } catch (e: Exception) {
+                _updateOrderResponse.value = NetworkResponse.Error("Something went wrong: ${e.message.toString()}")
+                onResult(false)
             }
         }
     }
@@ -182,6 +258,41 @@ class OrderViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 _getOrderResponse.value = NetworkResponse.Error("Something went wrong: ${e.message.toString()}")
+            }
+        }
+    }
+
+    fun sendMessage(accessToken: String, comment: String, orderID: Int, onResult: (Boolean) -> Unit) {
+        _getMessageResponse.value = NetworkResponse.Loading
+
+        viewModelScope.launch {
+            try {
+                val commentBody = CommentBody(
+                    OrderID = orderID,
+                    sender = "u", // sender is always the user
+                    comments = comment
+                )
+
+                val commentBodyJson = Gson().toJson(commentBody)
+                Log.d("SendMessage", "CommentBody JSON: $commentBodyJson") // Log the JSON payload
+                val response = orderAPI.sendMessage("Bearer $accessToken", commentBody)
+                Log.d("SendMessage", "Response Body: ${response.body()}")
+
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        if (!it.result.error) {
+                            _getMessageResponse.value = NetworkResponse.Success(it)
+                            onResult(true)
+                        } else {
+                            _getMessageResponse.value = NetworkResponse.Error("Failed: ${it.result.message}")
+                            onResult(false)
+                        }
+                    }
+                } else {
+                    _getMessageResponse.value = NetworkResponse.Error("Failed: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.d("SendMessage", "Something went wrong: ${e.message.toString()}")
             }
         }
     }

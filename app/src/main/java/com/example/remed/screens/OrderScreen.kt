@@ -58,6 +58,7 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry,
     var addedPrescriptionUri by remember { mutableStateOf<Uri?>(null) }
     var isPickup by remember { mutableStateOf(true) }
     var destination by remember { mutableStateOf(TextFieldValue("")) }
+
     val prescriptionPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
@@ -298,9 +299,9 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry,
 
                     // Call createOrder function
                     accessToken?.let {
-                        viewModel.createOrder(it, orderBody) { success ->
+                        viewModel.createOrder(context, it, orderBody, addedPrescriptionUri) { success ->
                             if (success) {
-                                Toast.makeText(context, "Order placed successfully", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Order is processing", Toast.LENGTH_SHORT).show()
                                 navController.navigate(MainRouteScreens.History.route)
                             } else {
                                 Toast.makeText(context, "Failed to place order", Toast.LENGTH_SHORT).show()

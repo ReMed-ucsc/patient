@@ -26,15 +26,19 @@ import com.example.remed.api.order.OrderData
 import com.example.remed.api.order.PharmacyData
 import com.example.remed.api.order.PharmacyList
 import com.example.remed.components.PharmacyCard
+import com.example.remed.components.PlacesAutocomplete
 import com.example.remed.datastore.StoreAccessToken
 import com.example.remed.models.OrderViewModel
 import com.example.remed.navigation.HomeRouteScreens
+import com.google.android.libraries.places.api.model.Place
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 
 @Composable
 fun SearchPharmacyScreen(navController: NavController, viewModel: OrderViewModel) {
     var location by remember { mutableStateOf(TextFieldValue("")) }
+    var selectedLocation by remember { mutableStateOf<Place?>(null) }
+
 
     val pharmacyListResponse = viewModel.pharmacyListResponse.observeAsState()
 
@@ -60,31 +64,43 @@ fun SearchPharmacyScreen(navController: NavController, viewModel: OrderViewModel
             fontWeight = FontWeight.Bold,
             color = Color.Black
         )
+
         Spacer(modifier = Modifier.height(8.dp))
 
-        BasicTextField(
-            value = location,
-            onValueChange = { location = it },
-            decorationBox = { innerTextField ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .background(Color.LightGray)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    innerTextField()
-                }
-            }
-        )
+        PlacesAutocomplete { place ->
+            selectedLocation = place
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+//        BasicTextField(
+//            value = location,
+//            onValueChange = { location = it },
+//            decorationBox = { innerTextField ->
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(50.dp)
+//                        .background(Color.LightGray)
+//                        .padding(horizontal = 16.dp, vertical = 12.dp),
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    innerTextField()
+//                }
+//            }
+//        )
+//
+//        Spacer(modifier = Modifier.height(16.dp))
+
         // Set Location Button
         Button(
+//            onClick = {
+//                viewModel.searchNearbyPharmacies(lat = 6.84862699, long = 79.924950)
+//            },
             onClick = {
-                viewModel.searchNearbyPharmacies(lat = 6.84862699, long = 79.924950)
+                selectedLocation?.latLng?.let { latLng ->
+                    viewModel.searchNearbyPharmacies(lat = latLng.latitude, long = latLng.longitude)
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()

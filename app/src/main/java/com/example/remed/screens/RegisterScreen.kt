@@ -1,5 +1,6 @@
 package com.example.remed.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -248,12 +249,16 @@ fun  RegisterScreen(navController: NavController, viewModel: AuthViewModel, modi
         when (val result = registerResponse.value) {
             is NetworkResponse.Success -> {
                 LaunchedEffect(key1 = result.data) {
-                    delay(1000L)
-                    navController.navigate(AuthRouteScreen.Login.route) {
-                        popUpTo(Graph.AUTH) { inclusive = true}
+                    try {
+                        delay(1000L)
+                        navController.navigate(AuthRouteScreen.Login.route) {
+                            popUpTo(Graph.AUTH) { inclusive = true }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("RegisterScreen", "Navigation error: ${e.message}")
                     }
                 }
-                    Text(text = result.data.message)
+                    Text(text = result.data.result.message)
             }
             is NetworkResponse.Error -> {
                 Text(text = result.message)

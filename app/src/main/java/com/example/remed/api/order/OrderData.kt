@@ -12,6 +12,7 @@ data class OrderData(
 )
 
 data class Order(
-    val orderDetails: OrderData,
-    val productDetails: List<MedicineProduct>
+    val orderDetails: SingleOrder,
+    val productDetails: List<MedicineProduct>,
+    val comments: List<Comment>
 )

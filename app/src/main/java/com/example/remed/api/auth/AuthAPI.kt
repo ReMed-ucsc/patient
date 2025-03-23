@@ -17,5 +17,5 @@ interface AuthAPI {
     @POST("patient/register")
     suspend fun register(
         @Body registerRequest: RegisterRequest
-    ) : Response<AuthResult>
+    ) : Response<LoginModel>
 }
