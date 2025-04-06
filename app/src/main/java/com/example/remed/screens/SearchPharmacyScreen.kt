@@ -1,44 +1,37 @@
 package com.example.remed.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.navigation.NavController
 import com.example.remed.api.NetworkResponse
-import com.example.remed.api.order.OrderData
 import com.example.remed.api.order.PharmacyData
-import com.example.remed.api.order.PharmacyList
 import com.example.remed.components.PharmacyCard
 import com.example.remed.components.PlacesAutocomplete
 import com.example.remed.datastore.StoreAccessToken
 import com.example.remed.models.OrderViewModel
-import com.example.remed.navigation.HomeRouteScreens
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.model.Place
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 
 @Composable
 fun SearchPharmacyScreen(navController: NavController, viewModel: OrderViewModel) {
-    var location by remember { mutableStateOf(TextFieldValue("")) }
-    var selectedLocation by remember { mutableStateOf<Place?>(null) }
-
+    var selectedPlace by remember { mutableStateOf<Place?>(null) }
+    var selectedLocation by remember { mutableStateOf<LatLng?>(null) }
+    var locationAddress by remember { mutableStateOf("") }
 
     val pharmacyListResponse = viewModel.pharmacyListResponse.observeAsState()
 
@@ -47,7 +40,7 @@ fun SearchPharmacyScreen(navController: NavController, viewModel: OrderViewModel
     var accessToken by remember { mutableStateOf<String?>(null) }
 
     // Fetch the access token and call API only once
-    LaunchedEffect(key1 = Unit) { // Use a key to prevent recomposition triggers
+    LaunchedEffect(key1 = Unit) {
         accessToken = runBlocking { dataStore.getAccessToken.firstOrNull() }
     }
 
@@ -55,7 +48,7 @@ fun SearchPharmacyScreen(navController: NavController, viewModel: OrderViewModel
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .padding(horizontal = 16.dp, vertical =  40.dp)
+            .padding(horizontal = 16.dp, vertical = 40.dp)
     ) {
         // Location search bar
         Text(
@@ -67,54 +60,65 @@ fun SearchPharmacyScreen(navController: NavController, viewModel: OrderViewModel
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Places Autocomplete Component
         PlacesAutocomplete { place ->
-            selectedLocation = place
+            selectedPlace = place
+            selectedLocation = place.latLng
+            locationAddress = place.address ?: ""
+            Log.d("SearchPharmacyScreen", "Selected place: $place")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-//        BasicTextField(
-//            value = location,
-//            onValueChange = { location = it },
-//            decorationBox = { innerTextField ->
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(50.dp)
-//                        .background(Color.LightGray)
-//                        .padding(horizontal = 16.dp, vertical = 12.dp),
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    innerTextField()
-//                }
-//            }
-//        )
-//
-//        Spacer(modifier = Modifier.height(16.dp))
+        // Display selected location info if available
+        selectedPlace?.let {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFF5F5F5)
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = it.name ?: "Selected Location",
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = it.address ?: "",
+                        color = Color.Gray
+                    )
+                }
+            }
+        }
 
         // Set Location Button
         Button(
-//            onClick = {
-//                viewModel.searchNearbyPharmacies(lat = 6.84862699, long = 79.924950)
-//            },
             onClick = {
-                selectedLocation?.latLng?.let { latLng ->
+                selectedLocation?.let { latLng ->
                     viewModel.searchNearbyPharmacies(lat = latLng.latitude, long = latLng.longitude)
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            enabled = selectedLocation != null
         ) {
-            Text(text = "Set Location")
+            Text(text = "Search Nearby Pharmacies")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Display pharmacies based on API response
         when (val result = pharmacyListResponse.value) {
             is NetworkResponse.Success -> {
-                val pharmacies : List<PharmacyData> = result.data.data
+                val pharmacies: List<PharmacyData> = result.data.data
                 Text(
                     text = "Nearby Pharmacies",
                     fontSize = 20.sp,
@@ -130,21 +134,31 @@ fun SearchPharmacyScreen(navController: NavController, viewModel: OrderViewModel
                 }
             }
             is NetworkResponse.Error -> {
-                Text(text = result.message)
+                Text(
+                    text = result.message,
+                    color = Color.Red,
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
             }
             is NetworkResponse.Loading -> {
-                CircularProgressIndicator()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(androidx.compose.ui.Alignment.Center)
+                    )
+                }
             }
-            null -> {}
+            null -> {
+                // Initial state before any search
+                Text(
+                    text = "Select a location to find nearby pharmacies",
+                    color = Color.Gray,
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+            }
         }
     }
 }
-
-
-data class Pharmacy(val name: String, val address: String, val contact: String)
-
-//@Preview(showBackground = true)
-//@Composable
-//fun SearchPharmacyScreenPreview() {
-//    SearchPharmacyScreen()
-//}

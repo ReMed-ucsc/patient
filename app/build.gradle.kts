@@ -1,6 +1,17 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+}
+
+val secretsFile = rootProject.file("secret.properties")
+val secretsProperties = Properties()
+if (secretsFile.exists()) {
+    secretsProperties.load(FileInputStream(secretsFile))
+} else {
+    secretsProperties.setProperty("MAPS_API_KEY", "")
 }
 
 android {
@@ -18,6 +29,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        manifestPlaceholders["MAPS_API_KEY"] = secretsProperties.getProperty("MAPS_API_KEY", "")
+        buildConfigField("String", "MAPS_API_KEY", "\"${secretsProperties.getProperty("MAPS_API_KEY", "")}\"")
     }
 
     buildTypes {
@@ -38,6 +52,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -93,6 +108,8 @@ dependencies {
     implementation(libs.coil.compose)
 
     implementation(libs.places)
+    implementation(libs.play.services.maps)
+    implementation(libs.maps.compose)
 
 
 }
