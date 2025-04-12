@@ -32,6 +32,7 @@ fun SearchPharmacyScreen(navController: NavController, viewModel: OrderViewModel
     var selectedPlace by remember { mutableStateOf<Place?>(null) }
     var selectedLocation by remember { mutableStateOf<LatLng?>(null) }
     var locationAddress by remember { mutableStateOf("") }
+    var range by remember { mutableStateOf(10f) } // Default range is 10 km
 
     val pharmacyListResponse = viewModel.pharmacyListResponse.observeAsState()
 
@@ -70,6 +71,23 @@ fun SearchPharmacyScreen(navController: NavController, viewModel: OrderViewModel
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Range Slider
+        Text(
+            text = "Select Range (km): ${range.toInt()}",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.Black
+        )
+        Slider(
+            value = range,
+            onValueChange = { range = it },
+            valueRange = 1f..20f,
+            steps = 19,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         // Display selected location info if available
         selectedPlace?.let {
             Card(
@@ -101,7 +119,7 @@ fun SearchPharmacyScreen(navController: NavController, viewModel: OrderViewModel
         Button(
             onClick = {
                 selectedLocation?.let { latLng ->
-                    viewModel.searchNearbyPharmacies(lat = latLng.latitude, long = latLng.longitude)
+                    viewModel.searchNearbyPharmacies(lat = latLng.latitude, long = latLng.longitude, range = range.toInt())
                 }
             },
             modifier = Modifier

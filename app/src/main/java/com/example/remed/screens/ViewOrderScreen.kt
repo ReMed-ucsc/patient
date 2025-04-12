@@ -89,7 +89,9 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
             )
         }
 
+        Log.d("ViewOrderScreen", "OrderResponse: $orderResponse")
         when (val result = orderResponse) {
+//            checking both network response success and orderResponse result errors
             is NetworkResponse.Success -> {
                 val order = result.data.data.orderDetails
                 val products = result.data.data.productDetails
@@ -240,45 +242,48 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
                     )
                 }
 
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
+                if (order.status == "WAITING") {
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    Button(
-                        onClick = {
-                            if (isEditing) {
-                                val productIDs = medicines.map { it.ProductID }
-                                val quantities = quantities.map { it.value }
+                        Button(
+                            onClick = {
+                                if (isEditing) {
+                                    val productIDs = medicines.map { it.ProductID }
+                                    val quantities = quantities.map { it.value }
 
-                                val orderBody = UpdateOrderBody(
-                                    orderID = order.OrderID,
-                                    productIDs = productIDs,
-                                    quantities = quantities,
-                                    removedProductIDs = removedMedicines
-                                )
+                                    val orderBody = UpdateOrderBody(
+                                        orderID = order.OrderID,
+                                        productIDs = productIDs,
+                                        quantities = quantities,
+                                        removedProductIDs = removedMedicines
+                                    )
 
-                                Log.d("OrderScreen", "OrderBody: $orderBody")
+                                    Log.d("OrderScreen", "OrderBody: $orderBody")
 
-                                accessToken?.let {
-                                    viewModel.updateOrder(it, orderBody) { success ->
-                                        if (success) {
-                                            Toast.makeText(context, "Order updated", Toast.LENGTH_SHORT).show()
-                                            viewModel.getOrder(it, orderId.toInt()) // Reload the screen
-                                        } else {
-                                            Toast.makeText(context, "Failed to update order", Toast.LENGTH_SHORT).show()
+                                    accessToken?.let {
+                                        viewModel.updateOrder(it, orderBody) { success ->
+                                            if (success) {
+                                                Toast.makeText(context, "Order updated", Toast.LENGTH_SHORT).show()
+                                                viewModel.getOrder(it, orderId.toInt()) // Reload the screen
+                                            } else {
+                                                Toast.makeText(context, "Failed to update order", Toast.LENGTH_SHORT).show()
+                                            }
                                         }
                                     }
                                 }
-                            }
-                            isEditing = !isEditing
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(text = if (isEditing) "Save Changes" else "Edit Order")
+                                isEditing = !isEditing
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(text = if (isEditing) "Save Changes" else "Edit Order")
+                        }
                     }
                 }
+
 
                 item {
                     Spacer(modifier = Modifier.height(16.dp))

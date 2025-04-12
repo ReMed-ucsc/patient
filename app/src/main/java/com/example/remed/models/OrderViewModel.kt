@@ -82,12 +82,12 @@ class OrderViewModel : ViewModel() {
         }
     }
 
-    fun searchNearbyPharmacies(lat: Double = 6.84862699, long: Double = 79.924950) {
+    fun searchNearbyPharmacies(lat: Double, long: Double, range: Int = 10) {
         _pharmacyListResponse.value = NetworkResponse.Loading
 
         viewModelScope.launch {
             try {
-                val response = orderAPI.searchNearbyPharmacies(lat, long)
+                val response = orderAPI.searchNearbyPharmacies(lat, long, range)
                 Log.d("SearchPharmacy", "Response Body for nearby: ${response.body()}")
                 if (response.isSuccessful) {
                     response.body()?.let {

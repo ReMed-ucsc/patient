@@ -20,7 +20,8 @@ interface OrderAPI {
     @GET("patient/searchNearbyPharmacies")
     suspend fun searchNearbyPharmacies(
         @Query("latitude") latitude: Double,
-        @Query("longitude") longitude: Double
+        @Query("longitude") longitude: Double,
+        @Query("range") range: Int
     ) : Response<PharmacyList>
 
     @GET("patient/searchPharmacies")
