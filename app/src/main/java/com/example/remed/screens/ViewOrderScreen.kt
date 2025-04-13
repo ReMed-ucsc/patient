@@ -117,173 +117,196 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                item {
-                    Text(
-                        text = "Medicines:",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+                if (!medicines.isEmpty()) {
+                    item {
+                        Text(
+                            text = "Medicines:",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
 
-                if (isEditing) {
-                    items(medicines.size) { index ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = medicines[index].ProductName,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = Color.Black,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            IconButton(onClick = { if (quantities[index].value > 1) quantities[index].value-- }) {
-                                Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrease Quantity")
+
+                    if (isEditing) {
+                        items(medicines.size) { index ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = medicines[index].ProductName,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = Color.Black,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                IconButton(onClick = { if (quantities[index].value > 1) quantities[index].value-- }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Remove,
+                                        contentDescription = "Decrease Quantity"
+                                    )
+                                }
+                                Text(
+                                    text = quantities[index].value.toString(),
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Normal
+                                )
+                                IconButton(onClick = { quantities[index].value++ }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Increase Quantity"
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                IconButton(onClick = {
+                                    removedMedicines = removedMedicines + medicines[index].ProductID
+                                    medicines = medicines - medicines[index]
+                                    quantities.removeAt(index)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Remove Medicine",
+                                        tint = Color.Red
+                                    )
+                                }
                             }
-                            Text(text = quantities[index].value.toString(), fontSize = 16.sp, fontWeight = FontWeight.Normal)
-                            IconButton(onClick = { quantities[index].value++ }) {
-                                Icon(imageVector = Icons.Default.Add, contentDescription = "Increase Quantity")
+                        }
+
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button(
+                                onClick = {
+                                    showMedicineDialog = true
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(text = "Add Medicine")
                             }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            IconButton(onClick = {
-                                removedMedicines = removedMedicines + medicines[index].ProductID
-                                medicines = medicines - medicines[index]
-                                quantities.removeAt(index)
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Remove Medicine",
-                                    tint = Color.Red
+                        }
+                    } else {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .border(1.dp, Color.Black)
+                            ) {
+                                Text(
+                                    text = "Medicine Name",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.weight(2f).padding(8.dp)
+                                )
+                                Text(
+                                    text = "Qty",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.weight(1f).padding(8.dp)
+                                )
+                                Text(
+                                    text = "Price",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.weight(1f).padding(8.dp)
+                                )
+                            }
+                        }
+
+                        items(products) { product ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .border(1.dp, Color.Black)
+                            ) {
+                                Text(
+                                    text = product.ProductName,
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.weight(2f).padding(8.dp)
+                                )
+                                Text(
+                                    text = "${product.Quantity}",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.weight(1f).padding(8.dp)
+                                )
+                                Text(
+                                    text = "${product.UnitPrice}",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.weight(1f).padding(8.dp)
                                 )
                             }
                         }
                     }
 
                     item {
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Button(
-                            onClick = {
-                                showMedicineDialog = true
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text(text = "Add Medicine")
-                        }
-                    }
-                } else {
-                    item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .border(1.dp, Color.Black)
-                        ) {
-                            Text(
-                                text = "Medicine Name",
-                                fontSize = 16.sp,
-                                modifier = Modifier.weight(2f).padding(8.dp)
-                            )
-                            Text(
-                                text = "Qty",
-                                fontSize = 16.sp,
-                                modifier = Modifier.weight(1f).padding(8.dp)
-                            )
-                            Text(
-                                text = "Price",
-                                fontSize = 16.sp,
-                                modifier = Modifier.weight(1f).padding(8.dp)
-                            )
-                        }
+                        val totalPrice = products.sumOf { it.UnitPrice * it.Quantity }
+                        Text(
+                            text = "Total: $totalPrice",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
                     }
 
-                    items(products) { product ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .border(1.dp, Color.Black)
-                        ) {
-                            Text(
-                                text = product.ProductName,
-                                fontSize = 16.sp,
-                                modifier = Modifier.weight(2f).padding(8.dp)
-                            )
-                            Text(
-                                text = "${product.Quantity}",
-                                fontSize = 16.sp,
-                                modifier = Modifier.weight(1f).padding(8.dp)
-                            )
-                            Text(
-                                text = "${product.UnitPrice}",
-                                fontSize = 16.sp,
-                                modifier = Modifier.weight(1f).padding(8.dp)
-                            )
-                        }
-                    }
-                }
+                    if (order.status == "WAITING") {
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                item {
-                    val totalPrice = products.sumOf { it.UnitPrice * it.Quantity }
-                    Text(
-                        text = "Total: $totalPrice",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
+                            Button(
+                                onClick = {
+                                    if (isEditing) {
+                                        val productIDs = medicines.map { it.ProductID }
+                                        val quantities = quantities.map { it.value }
 
-                if (order.status == "WAITING") {
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
+                                        val orderBody = UpdateOrderBody(
+                                            orderID = order.OrderID,
+                                            productIDs = productIDs,
+                                            quantities = quantities,
+                                            removedProductIDs = removedMedicines
+                                        )
 
-                        Button(
-                            onClick = {
-                                if (isEditing) {
-                                    val productIDs = medicines.map { it.ProductID }
-                                    val quantities = quantities.map { it.value }
+                                        Log.d("OrderScreen", "OrderBody: $orderBody")
 
-                                    val orderBody = UpdateOrderBody(
-                                        orderID = order.OrderID,
-                                        productIDs = productIDs,
-                                        quantities = quantities,
-                                        removedProductIDs = removedMedicines
-                                    )
-
-                                    Log.d("OrderScreen", "OrderBody: $orderBody")
-
-                                    accessToken?.let {
-                                        viewModel.updateOrder(it, orderBody) { success ->
-                                            if (success) {
-                                                Toast.makeText(context, "Order updated", Toast.LENGTH_SHORT).show()
-                                                viewModel.getOrder(it, orderId.toInt()) // Reload the screen
-                                            } else {
-                                                Toast.makeText(context, "Failed to update order", Toast.LENGTH_SHORT).show()
+                                        accessToken?.let {
+                                            viewModel.updateOrder(it, orderBody) { success ->
+                                                if (success) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Order updated",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                    viewModel.getOrder(
+                                                        it,
+                                                        orderId.toInt()
+                                                    ) // Reload the screen
+                                                } else {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Failed to update order",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                isEditing = !isEditing
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text(text = if (isEditing) "Save Changes" else "Edit Order")
+                                    isEditing = !isEditing
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(text = if (isEditing) "Save Changes" else "Edit Order")
+                            }
                         }
                     }
                 }
-
 
                 item {
                     Spacer(modifier = Modifier.height(16.dp))

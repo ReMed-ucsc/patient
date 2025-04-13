@@ -278,6 +278,12 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry,
 
             Button(
                 onClick = {
+                    // check if a prescription is uploaded or at least one medicine is selected
+                    if (addedPrescriptionUri == null && medicines.isEmpty()) {
+                        Toast.makeText(context, "Please upload a prescription or select at least one medicine", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
                     // Collect data
                     val productIds = medicines.map { it.ProductID }
                     val quantitiesList = quantities.map { it.value }
