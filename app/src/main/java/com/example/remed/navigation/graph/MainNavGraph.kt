@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.remed.models.AuthViewModel
 import com.example.remed.models.OrderViewModel
+import com.example.remed.models.ReminderViewModel
 import com.example.remed.navigation.Graph
 import com.example.remed.navigation.MainRouteScreens
 import com.example.remed.screens.DashboardScreen
@@ -33,7 +34,8 @@ fun MainNavGraph(
             DashboardScreen(navController = rootNavController)
         }
         composable(route = MainRouteScreens.Reminder.route) {
-            ReminderScreen(navController = rootNavController)
+            val reminderViewModel: ReminderViewModel = viewModel()
+            ReminderScreen(navController = rootNavController, viewModel = reminderViewModel)
         }
         composable(route = MainRouteScreens.History.route) {
             val orderViewModel: OrderViewModel = viewModel()

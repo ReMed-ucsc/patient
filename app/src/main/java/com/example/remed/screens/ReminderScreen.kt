@@ -1,5 +1,7 @@
 package com.example.remed.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,25 +18,31 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.remed.database.Reminder
+import com.example.remed.models.ReminderViewModel
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ReminderScreen(navController: NavController) {
+fun ReminderScreen(navController: NavController, viewModel: ReminderViewModel = hiltViewModel()) {
     var reminders by remember { mutableStateOf(listOf<Reminder>()) }
+    var showDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.getAllReminders().observeForever { dbReminders ->
+            reminders = dbReminders
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {
-                // Add logic to add new reminder
-                val newReminder = Reminder(
-                    drugName = "Drug A",
-                    dosage = "1 pill",
-                    time = "8:00 AM",
-                    additionalInfo = "Take with food"
-                )
-                reminders = reminders + newReminder
-            }, modifier = Modifier.padding(bottom = 72.dp)
+                onClick = { showDialog = true },
+                modifier = Modifier.padding(bottom = 72.dp)
             ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Reminder")
             }
@@ -78,6 +86,147 @@ fun ReminderScreen(navController: NavController) {
             }
         }
     )
+
+    if (showDialog) {
+        AddReminderDialog(
+            onDismiss = { showDialog = false },
+            onSave = { reminder ->
+                viewModel.insertReminder(reminder)
+                showDialog = false
+            }
+        )
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddReminderDialog(onDismiss: () -> Unit, onSave: (Reminder) -> Unit) {
+    var drugName by remember { mutableStateOf("") }
+    var dosage by remember { mutableStateOf("") }
+    var additionalInfo by remember { mutableStateOf("") }
+
+    // Time picker state
+    var showTimePicker by remember { mutableStateOf(false) }
+    val timePickerState = rememberTimePickerState()
+    var selectedTime by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Add Reminder") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedTextField(
+                    value = drugName,
+                    onValueChange = { drugName = it },
+                    label = { Text("Drug Name") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = dosage,
+                    onValueChange = { dosage = it },
+                    label = { Text("Dosage") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Time selector button
+                OutlinedButton(
+                    onClick = { showTimePicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (selectedTime.isNotEmpty()) "Time: $selectedTime" else "Select Time")
+                }
+
+                OutlinedTextField(
+                    value = additionalInfo,
+                    onValueChange = { additionalInfo = it },
+                    label = { Text("Additional Info") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val reminder = Reminder(
+                        drugName = drugName,
+                        dosage = dosage,
+                        time = selectedTime,
+                        additionalInfo = additionalInfo
+                    )
+                    onSave(reminder)
+                },
+                enabled = drugName.isNotEmpty() && dosage.isNotEmpty() && selectedTime.isNotEmpty()
+            ) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+
+    // Time Picker Dialog
+    if (showTimePicker) {
+        Dialog(onDismissRequest = { showTimePicker = false }) {
+            Surface(
+                shape = MaterialTheme.shapes.medium,
+                tonalElevation = 8.dp,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Select Time",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    TimePicker(state = timePickerState)
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(
+                            onClick = { showTimePicker = false }
+                        ) {
+                            Text("Cancel")
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Button(
+                            onClick = {
+                                // Format time as string (e.g., "8:30 AM")
+                                val hour = timePickerState.hour
+                                val minute = timePickerState.minute
+                                val localTime = LocalTime.of(hour, minute)
+                                selectedTime = localTime.format(
+                                    DateTimeFormatter.ofPattern("h:mm a")
+                                )
+                                showTimePicker = false
+                            }
+                        ) {
+                            Text("OK")
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -121,16 +270,3 @@ fun ReminderCard(reminder: Reminder) {
         }
     }
 }
-
-data class Reminder(
-    val drugName: String,
-    val dosage: String,
-    val time: String,
-    val additionalInfo: String
-)
-
-// @Preview(showBackground = true)
-// @Composable
-// fun ReminderScreenPreview() {
-//     ReminderScreen(navController = /* Provide NavController here */)
-// }
