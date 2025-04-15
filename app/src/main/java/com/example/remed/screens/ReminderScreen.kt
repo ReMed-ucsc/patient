@@ -31,6 +31,8 @@ import java.time.format.DateTimeFormatter
 fun ReminderScreen(navController: NavController, viewModel: ReminderViewModel = hiltViewModel()) {
     var reminders by remember { mutableStateOf(listOf<Reminder>()) }
     var showDialog by remember { mutableStateOf(false) }
+    var selectedReminder by remember { mutableStateOf<Reminder?>(null) }
+
 
     LaunchedEffect(Unit) {
         viewModel.getAllReminders().observeForever { dbReminders ->
@@ -41,7 +43,10 @@ fun ReminderScreen(navController: NavController, viewModel: ReminderViewModel = 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showDialog = true },
+                onClick = {
+                    selectedReminder = null // Reset for new reminder
+                    showDialog = true
+                },
                 modifier = Modifier.padding(bottom = 72.dp)
             ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Reminder")
@@ -79,7 +84,11 @@ fun ReminderScreen(navController: NavController, viewModel: ReminderViewModel = 
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(reminders) { reminder ->
-                            ReminderCard(reminder)
+                            ReminderCard(
+                                reminder = reminder,
+                                onEdit = { selectedReminder = it; showDialog = true },
+                                onDelete = { viewModel.deleteReminder(it) }
+                            )
                         }
                     }
                 }
@@ -91,9 +100,14 @@ fun ReminderScreen(navController: NavController, viewModel: ReminderViewModel = 
         AddReminderDialog(
             onDismiss = { showDialog = false },
             onSave = { reminder ->
-                viewModel.insertReminder(reminder)
+                if (selectedReminder != null) {
+                    viewModel.updateReminder(reminder.copy(id = selectedReminder!!.id))
+                } else {
+                    viewModel.insertReminder(reminder)
+                }
                 showDialog = false
-            }
+            },
+            initialReminder = selectedReminder
         )
     }
 }
@@ -101,19 +115,27 @@ fun ReminderScreen(navController: NavController, viewModel: ReminderViewModel = 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddReminderDialog(onDismiss: () -> Unit, onSave: (Reminder) -> Unit) {
-    var drugName by remember { mutableStateOf("") }
-    var dosage by remember { mutableStateOf("") }
-    var additionalInfo by remember { mutableStateOf("") }
+fun AddReminderDialog(
+    onDismiss: () -> Unit,
+    onSave: (Reminder) -> Unit,
+    initialReminder: Reminder? = null
+) {
+    var drugName by remember { mutableStateOf(initialReminder?.drugName ?: "") }
+    var dosage by remember { mutableStateOf(initialReminder?.dosage ?: "") }
+    var additionalInfo by remember { mutableStateOf(initialReminder?.additionalInfo ?: "") }
+    var selectedTime by remember { mutableStateOf(initialReminder?.time ?: "") }
+
 
     // Time picker state
     var showTimePicker by remember { mutableStateOf(false) }
-    val timePickerState = rememberTimePickerState()
-    var selectedTime by remember { mutableStateOf("") }
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialReminder?.time?.split(":")?.get(0)?.toInt() ?: 0,
+        initialMinute = initialReminder?.time?.split(":")?.get(1)?.split(" ")?.get(0)?.toInt() ?: 0
+    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Reminder") },
+        title = { Text(if (initialReminder != null) "Edit Reminder" else "Add Reminder") },
         text = {
             Column(
                 modifier = Modifier
@@ -230,7 +252,7 @@ fun AddReminderDialog(onDismiss: () -> Unit, onSave: (Reminder) -> Unit) {
 }
 
 @Composable
-fun ReminderCard(reminder: Reminder) {
+fun ReminderCard(reminder: Reminder, onEdit: (Reminder) -> Unit, onDelete: (Reminder) -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(8.dp),
@@ -267,6 +289,19 @@ fun ReminderCard(reminder: Reminder) {
                 fontSize = 16.sp,
                 color = Color.Gray
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                TextButton(onClick = { onEdit(reminder) }) {
+                    Text("Edit")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                TextButton(onClick = { onDelete(reminder) }) {
+                    Text("Delete")
+                }
+            }
         }
     }
 }
