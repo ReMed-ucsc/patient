@@ -6,6 +6,8 @@ data class OrderBody(
     val quantities: List<Int>,
     val pickup: Boolean,
     val destination: String?,
+    val destinationLat: Double?,
+    val destinationLng: Double?,
     val comments: String?,
     val prescriptionUri: String?
 )

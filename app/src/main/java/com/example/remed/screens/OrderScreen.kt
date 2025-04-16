@@ -35,9 +35,11 @@ import com.example.remed.api.order.MedicineProduct
 import com.example.remed.api.order.OrderBody
 import com.example.remed.api.order.PharmacyData
 import com.example.remed.components.MedicineSelectionDialog
+import com.example.remed.components.PlacesAutocomplete
 import com.example.remed.datastore.StoreAccessToken
 import com.example.remed.models.OrderViewModel
 import com.example.remed.navigation.MainRouteScreens
+import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.firstOrNull
@@ -57,7 +59,8 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry,
     var comments by remember { mutableStateOf(TextFieldValue("")) }
     var addedPrescriptionUri by remember { mutableStateOf<Uri?>(null) }
     var isPickup by remember { mutableStateOf(true) }
-    var destination by remember { mutableStateOf(TextFieldValue("")) }
+    var selectedLocation by remember { mutableStateOf<LatLng?>(null) }
+    var locationName by remember { mutableStateOf("") }
 
     val prescriptionPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -256,22 +259,13 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry,
 
             if (!isPickup) {
                 Spacer(modifier = Modifier.height(8.dp))
-                BasicTextField(
-                    value = destination.text,
-                    onValueChange = { destination = TextFieldValue(it) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color.LightGray)
-                        .padding(16.dp),
-                    decorationBox = { innerTextField ->
-                        if (destination.text.isEmpty()) {
-                            Text(text = "Enter Destination", color = Color.Gray)
-                        }
-                        innerTextField()
-                    }
-                )
+
+                PlacesAutocomplete { place ->
+                    selectedLocation = place.latLng
+                    locationName = place.name ?: ""
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -287,7 +281,8 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry,
                     // Collect data
                     val productIds = medicines.map { it.ProductID }
                     val quantitiesList = quantities.map { it.value }
-                    val destinationText = if (isPickup) null else destination.text
+                    val destinationText = if (isPickup) null else locationName
+                    val destinationLatLng = if (isPickup) null else selectedLocation
                     val pharmacyId = pharmacy.PharmacyID
 
                     // Create OrderBody
@@ -298,7 +293,9 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry,
                         pharmacyID = pharmacyId,
                         pickup = isPickup,
                         comments = comments.text,
-                        prescriptionUri = addedPrescriptionUri?.toString()
+                        prescriptionUri = addedPrescriptionUri?.toString(),
+                        destinationLat = destinationLatLng?.latitude,
+                        destinationLng = destinationLatLng?.longitude
                     )
 
                     Log.d("OrderScreen", "OrderBody: $orderBody")
