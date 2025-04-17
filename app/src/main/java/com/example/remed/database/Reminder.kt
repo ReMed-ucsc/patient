@@ -10,5 +10,7 @@ data class Reminder(
     val drugName: String,
     val dosage: String,
     val time: String,
-    val additionalInfo: String
+    val additionalInfo: String,
+    val isEnable: Boolean = true,
+    val isRepeat: Boolean = false
 )

@@ -16,6 +16,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.window.Dialog
@@ -29,16 +32,16 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReminderScreen(navController: NavController, viewModel: ReminderViewModel = hiltViewModel()) {
-    var reminders by remember { mutableStateOf(listOf<Reminder>()) }
+    val reminders by viewModel.getAllReminders().observeAsState(emptyList())
     var showDialog by remember { mutableStateOf(false) }
     var selectedReminder by remember { mutableStateOf<Reminder?>(null) }
 
 
-    LaunchedEffect(Unit) {
-        viewModel.getAllReminders().observeForever { dbReminders ->
-            reminders = dbReminders
-        }
-    }
+//    LaunchedEffect(Unit) {
+//        viewModel.getAllReminders().observeForever { dbReminders ->
+//            reminders = dbReminders
+//        }
+//    }
 
     Scaffold(
         floatingActionButton = {
@@ -124,6 +127,8 @@ fun AddReminderDialog(
     var dosage by remember { mutableStateOf(initialReminder?.dosage ?: "") }
     var additionalInfo by remember { mutableStateOf(initialReminder?.additionalInfo ?: "") }
     var selectedTime by remember { mutableStateOf(initialReminder?.time ?: "") }
+    var isEnable by remember { mutableStateOf(initialReminder?.isEnable ?: true) }
+    var isRepeat by remember { mutableStateOf(initialReminder?.isRepeat ?: false) }
 
 
     // Time picker state
@@ -171,6 +176,24 @@ fun AddReminderDialog(
                     label = { Text("Additional Info") },
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Enable Reminder")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Switch(checked = isEnable, onCheckedChange = { isEnable = it })
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Repeat Daily")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Switch(checked = isRepeat, onCheckedChange = { isRepeat = it })
+                }
             }
         },
         confirmButton = {
@@ -180,7 +203,9 @@ fun AddReminderDialog(
                         drugName = drugName,
                         dosage = dosage,
                         time = selectedTime,
-                        additionalInfo = additionalInfo
+                        additionalInfo = additionalInfo,
+                        isEnable = isEnable,
+                        isRepeat = isRepeat
                     )
                     onSave(reminder)
                 },
@@ -260,6 +285,33 @@ fun ReminderCard(reminder: Reminder, onEdit: (Reminder) -> Unit, onDelete: (Remi
             .fillMaxWidth()
             .padding(8.dp)
     ) {
+        // Enabled and Repeat Indicators
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (reminder.isRepeat) {
+                Icon(
+                    imageVector = Icons.Default.Repeat,
+                    contentDescription = "Repeat",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+            Box(
+                modifier = Modifier
+                    .size(12.dp)
+                    .background(
+                        color = if (reminder.isEnable) Color.Green else Color.Gray,
+                        shape = CircleShape
+                    )
+            )
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -283,17 +335,21 @@ fun ReminderCard(reminder: Reminder, onEdit: (Reminder) -> Unit, onDelete: (Remi
                 fontSize = 16.sp,
                 color = Color.Gray
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Additional Info: ${reminder.additionalInfo}",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            if(reminder.additionalInfo.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Additional Info: ${reminder.additionalInfo}",
+                    fontSize = 16.sp,
+                    color = Color.Gray
+                )
+            }
+
             Row(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
+
+
                 TextButton(onClick = { onEdit(reminder) }) {
                     Text("Edit")
                 }

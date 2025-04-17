@@ -18,6 +18,9 @@ class AlarmScheduler(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun scheduleAlarm(reminder: Reminder) {
+        // Check if the reminder is enabled
+        if (!reminder.isEnable) return
+
         val intent = Intent(context, ReminderReceiver::class.java).apply {
             putExtra("DRUG_NAME", reminder.drugName)
             putExtra("DOSAGE", reminder.dosage)
@@ -58,11 +61,20 @@ class AlarmScheduler(private val context: Context) {
             // Schedule the alarm
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (alarmManager.canScheduleExactAlarms()) {
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        calendar.timeInMillis,
-                        pendingIntent
-                    )
+                    if (reminder.isRepeat) {
+                        alarmManager.setRepeating(
+                            AlarmManager.RTC_WAKEUP,
+                            calendar.timeInMillis,
+                            AlarmManager.INTERVAL_DAY,
+                            pendingIntent
+                        )
+                    } else {
+                        alarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            calendar.timeInMillis,
+                            pendingIntent
+                        )
+                    }
                 } else {
                     Log.e("AlarmScheduler", "Cannot schedule exact alarms")
                 }
