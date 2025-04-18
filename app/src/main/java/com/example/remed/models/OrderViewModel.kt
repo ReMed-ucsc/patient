@@ -106,13 +106,13 @@ class OrderViewModel : ViewModel() {
         }
     }
 
-    fun searchPharmacies(lat: Double = 6.84862699, long: Double = 79.924950, productIDs: List<Int>) {
+    fun searchPharmacies(lat: Double = 6.84862699, long: Double = 79.924950, range: Int, productIDs: List<Int>) {
         _pharmacyWithMedicineListResponse.value = NetworkResponse.Loading
 
         viewModelScope.launch {
             try { // Log the productIDs
 
-                val response = orderAPI.searchPharmacies(lat, long, productIDs.joinToString(","))
+                val response = orderAPI.searchPharmacies(lat, long, productIDs.joinToString(","), range)
                 Log.d("SearchPharmacy", "Response Body for search med: ${response.body()} productIDs: $productIDs")
 //                Log.d("SearchPharmacy", "Raw Response Body for search med: ${response.raw()}")
                 if (response.isSuccessful) {

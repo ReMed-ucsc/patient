@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import com.example.remed.api.order.MedicineProduct
@@ -29,6 +30,12 @@ import com.example.remed.models.OrderViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.remed.api.NetworkResponse
 import com.example.remed.api.order.PharmacyData
+import com.example.remed.components.PlacesAutocomplete
+import com.example.remed.datastore.StoreAccessToken
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.libraries.places.api.model.Place
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun SearchMedicineScreen(navController: NavController, viewModel: OrderViewModel = viewModel()) {
@@ -37,6 +44,21 @@ fun SearchMedicineScreen(navController: NavController, viewModel: OrderViewModel
     var showSelectedMedicineList by remember { mutableStateOf(true) }
     var showPharmacyList by remember { mutableStateOf(false) }
     var showMedicineDialog by remember { mutableStateOf(false) }
+
+
+    var selectedPlace by remember { mutableStateOf<Place?>(null) }
+    var selectedLocation by remember { mutableStateOf<LatLng?>(null) }
+    var range by remember { mutableStateOf(10f) } // Default range is 10 km
+
+
+    val context = LocalContext.current
+    val dataStore = StoreAccessToken(context)
+    var accessToken by remember { mutableStateOf<String?>(null) }
+
+    // Fetch the access token and call API only once
+    LaunchedEffect(key1 = Unit) {
+        accessToken = runBlocking { dataStore.getAccessToken.firstOrNull() }
+    }
 
     Column(
         modifier = Modifier
@@ -96,13 +118,51 @@ fun SearchMedicineScreen(navController: NavController, viewModel: OrderViewModel
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Location search bar
+        Text(
+            text = "Enter Location",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Places Autocomplete Component
+        PlacesAutocomplete { place ->
+            selectedPlace = place
+            selectedLocation = place.latLng
+            Log.d("SearchPharmacyScreen", "Selected place: $place")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Range Slider
+        Text(
+            text = "Select Range (km): ${range.toInt()}",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.Black
+        )
+        Slider(
+            value = range,
+            onValueChange = { range = it },
+            valueRange = 1f..20f,
+            steps = 19,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         // Search Button
         Button(
             onClick = {
-                val productIds = selectedMedicines.map { it.ProductID }
-                viewModel.searchPharmacies(productIDs = productIds)
-                showPharmacyList = true
-                showSelectedMedicineList = false
+                selectedLocation?.let { latLng ->
+                    val productIds = selectedMedicines.map { it.ProductID }
+                    viewModel.searchPharmacies(lat = latLng.latitude, long = latLng.longitude, range = range.toInt(),productIDs = productIds)
+                    showPharmacyList = true
+                    showSelectedMedicineList = false
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
