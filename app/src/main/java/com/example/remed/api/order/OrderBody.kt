@@ -14,7 +14,7 @@ data class OrderBody(
 
 data class SingleOrder(
     val OrderID: Int,
-    val pharmacyID: Int,
+    val PharmacyID: Int,
     val pharmacyName: String,
     val status: String,
     val pickup: Int,

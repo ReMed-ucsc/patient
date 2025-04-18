@@ -64,6 +64,8 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
     var quantities by remember { mutableStateOf(mutableListOf<MutableState<Int>>()) }
     var removedMedicines by remember { mutableStateOf(listOf<Int>()) }
 
+    var pharmacyID by remember { mutableStateOf<Int?>(null) } // State to store pharmacyID
+
     // Fetch the access token and call API only once
     LaunchedEffect(key1 = Unit) {
         accessToken = runBlocking { dataStore.getAccessToken.firstOrNull() }
@@ -72,6 +74,12 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
     accessToken?.let {
         LaunchedEffect(orderId) {
             viewModel.getOrder(it, orderId.toInt())
+        }
+    }
+
+    LaunchedEffect(orderResponse) {
+        if (orderResponse is NetworkResponse.Success) {
+            pharmacyID = (orderResponse as NetworkResponse.Success).data.data.orderDetails.PharmacyID
         }
     }
 
@@ -96,7 +104,6 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
                 val order = result.data.data.orderDetails
                 val products = result.data.data.productDetails
                 val messages = result.data.data.comments
-
 
                 if (!isEditing) {
                     medicines = products
@@ -471,6 +478,9 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
                         )
                     }
                 }
+
+                Log.d("PharmacyMedicines", "Pharmacy ID: ${order.PharmacyID}")
+
             }
             is NetworkResponse.Error -> {
                 item {
@@ -483,6 +493,9 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
                 }
             }
             null -> {}
+
+
+
         }
     }
 
@@ -506,14 +519,20 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
     }
 
     if (showMedicineDialog) {
-        MedicineSelectionDialog(
-            onDismiss = { showMedicineDialog = false },
-            onMedicineSelected = { medicine ->
-                medicines = medicines + medicine
-                quantities.add(mutableStateOf(1))
-                showMedicineDialog = false
-            },
-            selectedMedicines = medicines
-        )
+        Log.d("PharmacyMedicines", "Pharmacy ID: $pharmacyID")
+
+        if (pharmacyID != null) {
+            MedicineSelectionDialog(
+                onDismiss = { showMedicineDialog = false },
+                onMedicineSelected = { medicine ->
+                    medicines = medicines + medicine
+                    quantities.add(mutableStateOf(1))
+                    showMedicineDialog = false
+                },
+                selectedMedicines = medicines,
+                searchType = 2,
+                pharmacyId = pharmacyID!!
+            )
+        }
     }
 }

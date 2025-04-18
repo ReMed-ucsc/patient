@@ -161,6 +161,34 @@ class OrderViewModel : ViewModel() {
         }
     }
 
+    fun getPharmacyMedicines(pharmacyID: Int, search: String = "") {
+        _medicineListResponse.value = NetworkResponse.Loading
+        viewModelScope.launch {
+            try {
+                Log.d("PharmacyMedicines", "Pharmacy ID: $pharmacyID, Search: $search") // Log the pharmacy ID and search query
+                val response = orderAPI.getPharmacyMedicines(pharmacyID, search)
+                Log.d("MedicineList", "Response Body: ${response.body()}")
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        if (!it.result.error) {
+                            _medicineListResponse.value = NetworkResponse.Success(it)
+                            Log.d("MedicineList", "Medicines: ${it.data}")
+                        } else {
+                            _medicineListResponse.value = NetworkResponse.Error("Failed: ${it.result.message}")
+                            Log.d("MedicineList", "Failed: ${it.result.message}")
+                        }
+                    }
+                } else {
+                    _medicineListResponse.value = NetworkResponse.Error("Failed: ${response.message()}")
+                    Log.d("MedicineList", "Failed: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                _medicineListResponse.value = NetworkResponse.Error("Something went wrong: ${e.message.toString()}")
+                Log.d("MedicineList", "Something went wrong: ${e.message.toString()}")
+            }
+        }
+    }
+
     fun createOrder(context: Context, accessToken: String, orderBody: OrderBody, prescriptionUri: Uri?, onResult: (Boolean) -> Unit) {
         _createOrderResponse.value = NetworkResponse.Loading
 

@@ -30,6 +30,8 @@ fun MedicineSelectionDialog(
     onDismiss: () -> Unit,
     onMedicineSelected: (MedicineProduct) -> Unit,
     selectedMedicines: List<MedicineProduct>,
+    pharmacyId: Int,
+    searchType: Int,  // 1 - all medicines, 2 - pharmacy medicines
     viewModel: OrderViewModel = viewModel()
 ) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
@@ -37,7 +39,11 @@ fun MedicineSelectionDialog(
 
     // Call getMedicines when the search query changes
     LaunchedEffect(searchQuery.text) {
-        viewModel.getMedicines(searchQuery.text)
+        if (searchType == 1) {
+            viewModel.getMedicines(searchQuery.text)
+        } else {
+            viewModel.getPharmacyMedicines(pharmacyId, searchQuery.text)
+        }
     }
 
     Dialog(onDismissRequest = { onDismiss() }) {

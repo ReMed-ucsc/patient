@@ -218,7 +218,9 @@ fun SearchMedicineScreen(navController: NavController, viewModel: OrderViewModel
                 selectedMedicines = selectedMedicines + medicine
                 showMedicineDialog = false
             },
-            selectedMedicines = selectedMedicines
+            selectedMedicines = selectedMedicines,
+            searchType = 1,
+            pharmacyId = 0
         )
     }
 }

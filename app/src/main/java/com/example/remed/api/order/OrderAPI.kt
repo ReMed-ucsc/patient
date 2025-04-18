@@ -37,6 +37,12 @@ interface OrderAPI {
         @Query("search") search: String
     ) : Response<MedicineList>
 
+    @GET("medicine/getPharmacyMedicines")
+    suspend fun getPharmacyMedicines(
+        @Query("pharmacyID") pharmacyID: Int,
+        @Query("search") search: String
+    ) : Response<MedicineList>
+
     @Multipart
     @POST("order/createOrder")
     suspend fun placeOrder(

@@ -81,6 +81,8 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry,
     // List to hold quantities
     var quantities by remember { mutableStateOf(medicines.map { mutableStateOf(1) }.toMutableList()) }
 
+    Log.d("PharmacyMedicines", "Medicines: $medicines, Pharmacy: $pharmacy")
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -330,7 +332,9 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry,
                 quantities.add(mutableStateOf(1)) // Add default quantity for new medicine
                 showMedicineDialog = false
             },
-            selectedMedicines = medicines
+            selectedMedicines = medicines,
+            searchType = 2,
+            pharmacyId = pharmacy.PharmacyID,
         )
     }
 }
