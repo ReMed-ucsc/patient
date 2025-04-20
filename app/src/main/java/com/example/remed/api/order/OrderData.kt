@@ -8,7 +8,8 @@ data class OrderData(
     val date: String,
     val destination: String,
     val pickup: String,
-    val status: String
+    val status: String,
+    val paymentMethod: String?,
 )
 
 data class Order(

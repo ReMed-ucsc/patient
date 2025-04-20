@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavBackStackEntry
 import coil.compose.AsyncImage
+import com.example.remed.api.NetworkResponse
 import com.example.remed.api.order.MedicineProduct
 import com.example.remed.api.order.OrderBody
 import com.example.remed.api.order.PharmacyData
@@ -81,7 +83,28 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry,
     // List to hold quantities
     var quantities by remember { mutableStateOf(medicines.map { mutableStateOf(1) }.toMutableList()) }
 
-    Log.d("PharmacyMedicines", "Medicines: $medicines, Pharmacy: $pharmacy")
+    LaunchedEffect(medicines) {
+        Log.d("CheckOverTheCounter", "Checking for over-the-counter medicines")
+
+        if (medicines.isNotEmpty()) {
+            val productIDs = medicines.map { it.ProductID }
+            Log.d("CheckOverTheCounter", "API called with productIDs: $productIDs")
+            viewModel.checkForOverTheCounter(productIDs)
+        }
+    }
+
+    val checkForOverTheCounterResponse by viewModel.checkForOverTheCounterResponse.observeAsState()
+    var isAllOverTheCounter by remember { mutableStateOf(false) }
+
+    LaunchedEffect(checkForOverTheCounterResponse) {
+        Log.d("CheckOverTheCounter", "Response: $checkForOverTheCounterResponse")
+        if (checkForOverTheCounterResponse is NetworkResponse.Success) {
+            val result = (checkForOverTheCounterResponse as NetworkResponse.Success).data
+            isAllOverTheCounter = result.data == 0
+        } else {
+            isAllOverTheCounter = false
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -277,6 +300,11 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry,
                     // check if a prescription is uploaded or at least one medicine is selected
                     if (addedPrescriptionUri == null && medicines.isEmpty()) {
                         Toast.makeText(context, "Please upload a prescription or select at least one medicine", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    if (!isAllOverTheCounter && addedPrescriptionUri == null) {
+                        Toast.makeText(context, "Some medicines are not over-the-counter and require a prescription", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
 

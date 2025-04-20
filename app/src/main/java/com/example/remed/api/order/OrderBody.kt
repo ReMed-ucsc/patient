@@ -22,14 +22,16 @@ data class SingleOrder(
     val date: String,
     val PatientID: Int,
     val patientName: String,
-    val prescription: String?
+    val prescription: String?,
+    val paymentMethod: String?
 )
 
 data class UpdateOrderBody(
     val orderID: Int,
     val productIDs: List<Int>,
     val quantities: List<Int>,
-    val removedProductIDs: List<Int>
+    val removedProductIDs: List<Int>,
+    val status: String
 )
 
 data class OrderID(

@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.remed.api.NetworkResponse
 import com.example.remed.api.RetrofitInstance
+import com.example.remed.api.order.CheckOverTheCounter
 import com.example.remed.api.order.Comment
 import com.example.remed.api.order.CommentBody
 import com.example.remed.api.order.CommentResult
@@ -18,6 +19,7 @@ import com.example.remed.api.order.OrderBody
 import com.example.remed.api.order.OrderList
 import com.example.remed.api.order.OrderResult
 import com.example.remed.api.order.PharmacyList
+import com.example.remed.api.order.Result
 import com.example.remed.api.order.UpdateOrderBody
 import com.example.remed.util.uploadImage
 import com.google.gson.Gson
@@ -44,6 +46,9 @@ class OrderViewModel : ViewModel() {
 
     private val _medicineListResponse = MutableLiveData<NetworkResponse<MedicineList>>()
     val medicineListResponse: LiveData<NetworkResponse<MedicineList>> = _medicineListResponse
+
+    private val _checkForOverTheCounterResponse = MutableLiveData<NetworkResponse<CheckOverTheCounter>>()
+    val checkForOverTheCounterResponse: LiveData<NetworkResponse<CheckOverTheCounter>> = _checkForOverTheCounterResponse
 
     private val _createOrderResponse = MutableLiveData<NetworkResponse<CreateOrder>>()
     val createOrderResponse: LiveData<NetworkResponse<CreateOrder>> = _createOrderResponse
@@ -189,6 +194,37 @@ class OrderViewModel : ViewModel() {
         }
     }
 
+    fun checkForOverTheCounter(productIDs: List<Int>){
+        _checkForOverTheCounterResponse.value = NetworkResponse.Loading
+        viewModelScope.launch {
+            try {
+                val productIDsString = productIDs.joinToString(",")
+                Log.d("CheckOverTheCounter", "Product IDs: $productIDsString") // Log the product IDs
+
+                val response = orderAPI.checkForOverTheCounter(productIDsString)
+                Log.d("CheckOverTheCounter", "Response Body: ${response.body()}")
+
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        if (it.data == 0) {
+                            _checkForOverTheCounterResponse.value = NetworkResponse.Success(it)
+                            Log.d("CheckOverTheCounter", "Over the counter: ${it.result.message}")
+                        } else {
+                            _checkForOverTheCounterResponse.value = NetworkResponse.Error("Failed: ${it.result.message}")
+                            Log.d("CheckOverTheCounter", "Failed: ${it.result.message}")
+                        }
+                    }
+                } else {
+                    _checkForOverTheCounterResponse.value = NetworkResponse.Error("Failed: ${response.message()}")
+                    Log.d("CheckOverTheCounter", "Failed: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                _checkForOverTheCounterResponse.value = NetworkResponse.Error("Something went wrong: ${e.message.toString()}")
+                Log.d("CheckOverTheCounter", "Something went wrong: ${e.message.toString()}")
+            }
+        }
+    }
+
     fun createOrder(context: Context, accessToken: String, orderBody: OrderBody, prescriptionUri: Uri?, onResult: (Boolean) -> Unit) {
         _createOrderResponse.value = NetworkResponse.Loading
 
@@ -260,6 +296,64 @@ class OrderViewModel : ViewModel() {
                     onResult(false)
                 }
             } catch (e: Exception) {
+                _updateOrderResponse.value = NetworkResponse.Error("Something went wrong: ${e.message.toString()}")
+                onResult(false)
+            }
+        }
+    }
+
+    fun updateOrderStatus(accessToken: String, orderID: Int, status: String, onResult: (Boolean) -> Unit) {
+        _updateOrderResponse.value = NetworkResponse.Loading
+
+        viewModelScope.launch {
+            try {
+                val response = orderAPI.updateOrderStatus("Bearer $accessToken", orderID, status)
+                Log.d("UpdateOrderStatus", "Response Body: ${response.body()}")
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        if (!it.result.error) {
+                            _updateOrderResponse.value = NetworkResponse.Success(it)
+                            onResult(true)
+                        } else {
+                            _updateOrderResponse.value = NetworkResponse.Error("Failed: ${it.result.message}")
+                            onResult(false)
+                        }
+                    }
+                } else {
+                    _updateOrderResponse.value = NetworkResponse.Error("Failed: ${response.message()}")
+                    onResult(false)
+                }
+            } catch (e: Exception) {
+                Log.d("UpdateOrderStatus", "Something went wrong: ${e.message.toString()}")
+                _updateOrderResponse.value = NetworkResponse.Error("Something went wrong: ${e.message.toString()}")
+                onResult(false)
+            }
+        }
+    }
+
+    fun setPaymentMethod(accessToken: String, orderID: Int, paymentMethod: String, onResult: (Boolean) -> Unit) {
+        _updateOrderResponse.value = NetworkResponse.Loading
+
+        viewModelScope.launch {
+            try {
+                val response = orderAPI.setPaymentMethod("Bearer $accessToken", orderID, paymentMethod)
+                Log.d("SetPaymentMethod", "Response Body: ${response.body()}")
+                if (response.isSuccessful) {
+                    response.body()?.let {
+                        if (!it.result.error) {
+                            _updateOrderResponse.value = NetworkResponse.Success(it)
+                            onResult(true)
+                        } else {
+                            _updateOrderResponse.value = NetworkResponse.Error("Failed: ${it.result.message}")
+                            onResult(false)
+                        }
+                    }
+                } else {
+                    _updateOrderResponse.value = NetworkResponse.Error("Failed: ${response.message()}")
+                    onResult(false)
+                }
+            } catch (e: Exception) {
+                Log.d("SetPaymentMethod", "Something went wrong: ${e.message.toString()}")
                 _updateOrderResponse.value = NetworkResponse.Error("Something went wrong: ${e.message.toString()}")
                 onResult(false)
             }

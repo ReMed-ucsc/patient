@@ -43,6 +43,11 @@ interface OrderAPI {
         @Query("search") search: String
     ) : Response<MedicineList>
 
+    @GET("medicine/checkForOverTheCounter")
+    suspend fun checkForOverTheCounter(
+        @Query("productIDs") productIDs: String
+    ) : Response<CheckOverTheCounter>
+
     @Multipart
     @POST("order/createOrder")
     suspend fun placeOrder(
@@ -55,6 +60,20 @@ interface OrderAPI {
     suspend fun updateOrder(
         @Header ("Auth") authToken: String,
         @Body order: UpdateOrderBody
+    ) : Response<CreateOrder>
+
+    @GET("order/updateOrderStatus")
+    suspend fun updateOrderStatus(
+        @Header ("Auth") authToken: String,
+        @Query("OrderID") orderID: Int,
+        @Query("status") status: String
+    ) : Response<CreateOrder>
+
+    @GET("order/setPaymentMethod")
+    suspend fun setPaymentMethod(
+        @Header ("Auth") authToken: String,
+        @Query("OrderID") orderID: Int,
+        @Query("paymentMethod") paymentMethod: String
     ) : Response<CreateOrder>
 
     @GET("order/getOrder")

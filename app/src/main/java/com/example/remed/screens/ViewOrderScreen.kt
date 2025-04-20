@@ -83,6 +83,29 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
         }
     }
 
+    LaunchedEffect(medicines) {
+        Log.d("CheckOverTheCounter", "Checking for over-the-counter medicines")
+
+        if (medicines.isNotEmpty()) {
+            val productIDs = medicines.map { it.ProductID }
+            Log.d("CheckOverTheCounter", "API called with productIDs: $productIDs")
+            viewModel.checkForOverTheCounter(productIDs)
+        }
+    }
+
+    val checkForOverTheCounterResponse by viewModel.checkForOverTheCounterResponse.observeAsState()
+    var isAllOverTheCounter by remember { mutableStateOf(false) }
+
+    LaunchedEffect(checkForOverTheCounterResponse) {
+        Log.d("CheckOverTheCounter", "Response: $checkForOverTheCounterResponse")
+        if (checkForOverTheCounterResponse is NetworkResponse.Success) {
+            val result = (checkForOverTheCounterResponse as NetworkResponse.Success).data
+            isAllOverTheCounter = result.data == 0
+        } else {
+            isAllOverTheCounter = false
+        }
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -267,6 +290,12 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
 
                             Button(
                                 onClick = {
+                                    Log.d("CheckOverTheCounter", "Prescription already uploaded: ${order.prescription != null}")
+                                    if (!isAllOverTheCounter && order.prescription == null) {
+                                        Toast.makeText(context, "Some medicines are not over-the-counter and require a prescription", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
+
                                     if (isEditing) {
                                         val productIDs = medicines.map { it.ProductID }
                                         val quantities = quantities.map { it.value }
@@ -275,7 +304,8 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
                                             orderID = order.OrderID,
                                             productIDs = productIDs,
                                             quantities = quantities,
-                                            removedProductIDs = removedMedicines
+                                            removedProductIDs = removedMedicines,
+                                            status = order.status
                                         )
 
                                         Log.d("OrderScreen", "OrderBody: $orderBody")
@@ -335,17 +365,207 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
                             text = order.status,
                             fontSize = 18.sp,
                             color = when (order.status) {
-                                "PROCESSING" -> Color.Blue
                                 "WAITING" -> Color.Yellow
-                                "USER_PICKED_UP" -> Color.Green
+                                "WAITING FOR PICKUP" -> Color.Yellow
+                                "PROCESSING" -> Color.Blue
+                                "ACCEPT QUOTATION" -> Color.Yellow
                                 "DELIVERED" -> Color.Gray
+                                "USER PICKED UP" -> Color.Green
+                                "DELIVERY COMPLETED" -> Color.Magenta
                                 "REJECTED" -> Color.Red
-                                "CANCELLED" -> Color.Magenta
-                                "DELIVERY_FAILED" -> Color.Cyan
+                                "DELIVERY FAILED" -> Color.Cyan
+                                "ACCEPTED" -> Color.Green
+                                "DELIVERY IN PROGRESS" -> Color.DarkGray
                                 else -> Color.Black
                             },
                             fontWeight = FontWeight.Bold
                         )
+                    }
+                }
+
+                if (order.status == "ACCEPT QUOTATION" ) {
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Button(
+                                onClick = {
+                                    // Handle Accept action
+                                    accessToken?.let {
+                                        viewModel.updateOrderStatus(
+                                            it,
+                                            orderId.toInt(),
+                                            "A"
+                                        ) { success ->
+                                            if (success) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Order Accepted",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                viewModel.getOrder(
+                                                    it,
+                                                    orderId.toInt()
+                                                ) // Reload the screen
+                                            } else {
+                                                Log.d("OrderScreen", "Failed to accept order response: $success")
+                                                Toast.makeText(
+                                                    context,
+                                                    "Failed to accept order",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
+                            ) {
+                                Text(text = "Accept")
+                            }
+
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            Button(
+                                onClick = {
+                                    // Handle Reject action
+                                    accessToken?.let {
+                                        viewModel.updateOrderStatus(
+                                            it,
+                                            orderId.toInt(),
+                                            "R"
+                                        ) { success ->
+                                            if (success) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Order Rejected",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                viewModel.getOrder(
+                                                    it,
+                                                    orderId.toInt()
+                                                ) // Reload the screen
+                                            } else {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Failed to reject order",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                            ) {
+                                Text(text = "Reject")
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+
+                if (order.status == "ACCEPTED" && order.paymentMethod?.isEmpty() == true) {
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = "Select Payment Method",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            if (order.pickup == 1) {
+                                // Payment options for pickup
+                                Button(
+                                    onClick = {
+                                        accessToken?.let {
+                                            viewModel.setPaymentMethod(it, order.OrderID, "cash") { success ->
+                                                if (success) {
+                                                    Toast.makeText(context, "Payment set to Cash", Toast.LENGTH_SHORT).show()
+                                                    viewModel.getOrder(it, orderId.toInt()) // Reload the screen
+                                                } else {
+                                                    Toast.makeText(context, "Failed to set payment method", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(text = "Cash")
+                                }
+
+                                Spacer(modifier = Modifier.width(16.dp))
+
+                                Button(
+                                    onClick = {
+                                        accessToken?.let {
+                                            viewModel.setPaymentMethod(it, order.OrderID, "card") { success ->
+                                                if (success) {
+                                                    Toast.makeText(context, "Payment set to Card", Toast.LENGTH_SHORT).show()
+                                                    viewModel.getOrder(it, orderId.toInt()) // Reload the screen
+                                                } else {
+                                                    Toast.makeText(context, "Failed to set payment method", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(text = "Card")
+                                }
+                            } else {
+                                // Payment options for delivery
+                                Button(
+                                    onClick = {
+                                        accessToken?.let {
+                                            viewModel.setPaymentMethod(it, order.OrderID, "card") { success ->
+                                                if (success) {
+                                                    Toast.makeText(context, "Payment set to Card", Toast.LENGTH_SHORT).show()
+                                                    viewModel.getOrder(it, orderId.toInt()) // Reload the screen
+                                                } else {
+                                                    Toast.makeText(context, "Failed to set payment method", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(text = "Card")
+                                }
+
+                                Spacer(modifier = Modifier.width(16.dp))
+
+                                Button(
+                                    onClick = {
+                                        accessToken?.let {
+                                            viewModel.setPaymentMethod(it, order.OrderID, "cod") { success ->
+                                                if (success) {
+                                                    Toast.makeText(context, "Payment set to Cash on Delivery", Toast.LENGTH_SHORT).show()
+                                                    viewModel.getOrder(it, orderId.toInt()) // Reload the screen
+                                                } else {
+                                                    Toast.makeText(context, "Failed to set payment method", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(text = "Cash on Delivery")
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
 
