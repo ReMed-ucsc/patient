@@ -46,7 +46,7 @@ fun PharmacyCard(pharmacy: PharmacyData, navController: NavController) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Contact: ${pharmacy.contact}",
+                text = "Contact: ${pharmacy.contactNo}",
                 fontSize = 16.sp,
                 color = Color.Gray
             )

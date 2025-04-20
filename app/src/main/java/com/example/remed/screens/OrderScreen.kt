@@ -190,12 +190,7 @@ fun OrderScreen(navController: NavController, backStackEntry: NavBackStackEntry,
                 color = Color.Gray
             )
             Text(
-                text = "Contact: ${pharmacy.contact}",
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
-            Text(
-                text = "Available: ${pharmacy.availableCount} units",
+                text = "Contact: ${pharmacy.contactNo}",
                 fontSize = 16.sp,
                 color = Color.Gray
             )

@@ -188,9 +188,17 @@ fun SearchMedicineScreen(navController: NavController, viewModel: OrderViewModel
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Log.d("SearchPharmacy", "Pharmacies: $pharmacies")
+                    Log.d("SearchPharmacy", "Selected Medicines: $selectedMedicines")
+
                     LazyColumn {
                         items(pharmacies) { pharmacy ->
-                            PharmacyWithMedicineCard(pharmacy, navController, selectedMedicines)
+                            val availableMedicines = selectedMedicines.filter { medicine ->
+                                !pharmacy.notAvailableProducts!!.contains(medicine.ProductName)
+                            }
+
+                            Log.d("SearchPharmacy", "Available Medicines: $availableMedicines")
+
+                            PharmacyWithMedicineCard(pharmacy, navController, availableMedicines)
                         }
                     }
                 }
