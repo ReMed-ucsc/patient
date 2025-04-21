@@ -388,11 +388,11 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
                                     "PROCESSING" -> Color.Blue
                                     "ACCEPT QUOTATION" -> Color.Yellow
                                     "DELIVERED" -> Color.Gray
-                                    "USER PICKED UP" -> Color.Green
+                                    "USER PICKED UP" -> Color(0xFF4CAF50)
                                     "DELIVERY COMPLETED" -> Color.Magenta
                                     "REJECTED" -> Color.Red
                                     "DELIVERY FAILED" -> Color.Cyan
-                                    "ACCEPTED" -> Color.Green
+                                    "ACCEPTED" -> Color(0xFF4CAF50)
                                     "DELIVERY IN PROGRESS" -> Color.DarkGray
                                     else -> Color.Black
                                 },
@@ -440,7 +440,7 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
                                         }
                                     },
                                     modifier = Modifier.weight(1f),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
                                 ) {
                                     Text(text = "Accept")
                                 }
