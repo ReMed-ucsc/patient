@@ -4,7 +4,7 @@ data class OrderBody(
     val pharmacyID: Int,
     val productIDs: List<Int>,
     val quantities: List<Int>,
-    val pickup: Boolean,
+    val pickup: Int,
     val destination: String?,
     val destinationLat: Double?,
     val destinationLng: Double?,

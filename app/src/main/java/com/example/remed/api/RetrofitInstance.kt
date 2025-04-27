@@ -6,7 +6,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
-    private const val baseUrl = "http://remed.atwebpages.com/api/"
+    private const val baseUrl = "https://becoming-adjusted-elf.ngrok-free.app/remed-1.0/api/"
+//    http://remed.atwebpages.com/api/
 
     private fun getInstance(): Retrofit {
         return Retrofit.Builder()

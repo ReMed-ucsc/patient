@@ -487,7 +487,7 @@ fun ViewOrderScreen(navController: NavController, orderId: String, viewModel: Or
                         }
                     }
 
-                    if (order.status == "ACCEPTED" && order.paymentMethod?.isEmpty() == true) {
+                    if (order.status == "ACCEPTED" && order.paymentMethod.isNullOrEmpty()) {
                         item {
                             Spacer(modifier = Modifier.height(16.dp))
 
